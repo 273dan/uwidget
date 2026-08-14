@@ -1,27 +1,12 @@
 #pragma once
 
-#include "session.hpp"
 #include <type_traits>
+#include "policy.hpp"
+#include "session.hpp"
+#include "detail.hpp"
+#include "widget_exception.hpp"
 
 namespace uwidget {
-  namespace policy {
-    struct NoMove{};
-    struct NoCopy{};
-    struct NoDefaultConstruct{};
-  }
-  namespace detail {
-    template<typename TargetT, typename FirstT, typename ...Policies>
-    inline constexpr bool has_policy_v =
-    std::is_same_v<TargetT, FirstT> ||
-    (std::is_same_v<TargetT, Policies> || ...);
-
-    using namespace policy;
-    template<typename Target>
-    inline constexpr bool is_policy_v =
-      std::is_same_v<Target, NoMove> ||
-      std::is_same_v<Target, NoCopy> ||
-      std::is_same_v<Target, NoDefaultConstruct>;
-  }
   
   //                 a single policied-widget will have that policy interpreted as "ValueT", so 
   //                 we call the first parameter FirstOrValueT
@@ -53,10 +38,11 @@ namespace uwidget {
       return Session<Widget>::instance();
     }
 
-
-
     // default construction
     Widget() requires(can_default_construct) {
+      if constexpr(w_has_policy_v<policy::ThrowOnDefaultConstruction>) {
+        throw WidgetException("uwidget: ThrowOnDefaultconstruction");
+      }
       get_session().template reg<RegisteredData::DefaultConstructions>();
       get_session().template reg<RegisteredData::ActiveInstances>();
     }
@@ -80,14 +66,20 @@ namespace uwidget {
     }
 
     // move construction
-    Widget(Widget&& other) noexcept requires(can_move) : value{std::move(other.value)} {
+    Widget(Widget&& other) noexcept(!w_has_policy_v<detail::ThrowOnMove>) requires(can_move) : value{std::move(other.value)} {
+      if constexpr(w_has_policy_v<policy::ThrowOnMove>) {
+        throw WidgetException("uwidget: ThrowOnMove");
+      }
       get_session().template reg<RegisteredData::MoveConstructions>();
       get_session().template reg<RegisteredData::ActiveInstances>();
     }
     Widget(Widget&&) requires(!can_move) = delete;
 
     // move assignment
-    Widget& operator=(Widget&& other) noexcept requires(can_move) {
+    Widget& operator=(Widget&& other) noexcept(!w_has_policy_v<detail::ThrowOnMove>) requires(can_move) {
+      if constexpr(w_has_policy_v<policy::ThrowOnMove>) {
+        throw WidgetException("uwidget: ThrowOnMove");
+      }
       get_session().template reg<RegisteredData::MoveAssignments>();
       value = std::move(other.value);
       return *this;
@@ -96,6 +88,9 @@ namespace uwidget {
 
     // copy construction
     Widget(const Widget& other) requires(can_copy) : value{other.value} {
+      if constexpr(w_has_policy_v<policy::ThrowOnCopy>) {
+        throw WidgetException("uwidget: ThrowOnCopy");
+      }
       get_session().template reg<RegisteredData::CopyConstructions>();
       get_session().template reg<RegisteredData::ActiveInstances>();
     }
@@ -103,6 +98,9 @@ namespace uwidget {
 
     // copy assignment
     Widget& operator=(const Widget& other) requires(can_copy) {
+      if constexpr(w_has_policy_v<policy::ThrowOnCopy>) {
+        throw WidgetException("uwidget: ThrowOnCopy");
+      }
       get_session().template reg<RegisteredData::CopyAssignments>();
       value = other.value;
       return *this;

@@ -10,6 +10,7 @@ function(uw_add_runtime_test UW_TEST_NAME UW_FAIL_OR_PASS)
   endif()
 endfunction()
 
+  
 uw_add_runtime_test(track_default_construct PASS)
 
 uw_add_runtime_test(track_copy_assign PASS)
@@ -20,3 +21,7 @@ uw_add_runtime_test(track_move_construct PASS)
 
 uw_add_runtime_test(track_lifetimes PASS)
 uw_add_runtime_test(value_primitive_preservation PASS)
+
+uw_add_runtime_test(throw_on_copy PASS)
+uw_add_runtime_test(throw_on_move PASS)
+uw_add_runtime_test(throw_on_default PASS)
