@@ -1,3 +1,5 @@
+UW_INSTALL_PREFIX ?= /usr/local
+
 .PHONY: all
 all:	build
 
@@ -12,6 +14,11 @@ build:	config
 .PHONY: test
 test:	build
 	cd build && ctest --output-on-failure
+
 .PHONY: clean
 clean:
 	rm -rf build
+
+.PHONY: install
+install:	build
+	cmake --install build --prefix $(UW_INSTALL_PREFIX)
