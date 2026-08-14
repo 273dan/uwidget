@@ -7,7 +7,7 @@ function(uw_add_compilation_test UW_TEST_NAME UW_FAIL_OR_PASS)
     NAME compilation_tests.${UW_TEST_NAME}
     COMMAND ${CMAKE_COMMAND} --build . --target ${UW_TEST_NAME} --config $<CONFIGURATION>)
   if(${UW_TEST_FAIL})
-    set_tests_properties(runtime_tests.${UW_TEST_NAME} PROPERTIES WILL_FAIL TRUE)
+    set_tests_properties(compilation_tests.${UW_TEST_NAME} PROPERTIES WILL_FAIL TRUE)
   endif()
 endfunction()
 
@@ -15,3 +15,4 @@ uw_add_compilation_test(pos_copy_and_move_constraints PASS)
 uw_add_compilation_test(pos_default_widget PASS)
 uw_add_compilation_test(pos_value_types PASS)
 uw_add_compilation_test(pos_non_default_constructible_value_type PASS)
+uw_add_compilation_test(neg_non_policy_t_in_policies FAIL)

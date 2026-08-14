@@ -20,6 +20,8 @@ namespace uwidget {
     using value_t = std::conditional_t<detail::is_policy_v<FirstOrValueT>, int, FirstOrValueT>;
     value_t value;
 
+    static_assert((detail::is_policy_v<Policies> && ...), "all types in Policies must inherit from policy_base");
+
     inline static constexpr bool can_move =
       !w_has_policy_v<policy::NoMove> &&
       std::is_move_constructible_v<value_t> &&
