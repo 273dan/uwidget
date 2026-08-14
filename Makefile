@@ -1,0 +1,14 @@
+.PHONY: all
+all:	build
+
+.PHONY:	config
+config:
+	cmake -S . -B build
+
+.PHONY:	build
+build:	config
+	cmake --build build
+
+.PHONY: test
+test:	build
+	cd build && ctest --output-on-failure
