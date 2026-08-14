@@ -12,3 +12,6 @@ build:	config
 .PHONY: test
 test:	build
 	cd build && ctest --output-on-failure
+.PHONY: clean
+clean:
+	rm -rf build

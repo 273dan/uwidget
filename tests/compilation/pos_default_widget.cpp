@@ -7,3 +7,4 @@ static_assert(std::is_copy_constructible_v<Widget<>>, "Default widget should be 
 static_assert(std::is_copy_assignable_v<Widget<>>, "Default widget should be copy assignable");
 static_assert(std::is_move_constructible_v<Widget<>>, "Default widget should be move constructible");
 static_assert(std::is_move_assignable_v<Widget<>>, "Default widget should be move assignable");
+static_assert(std::is_default_constructible_v<Widget<>>, "Default widget should be default constructible");

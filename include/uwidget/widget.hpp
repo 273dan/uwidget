@@ -23,32 +23,53 @@ namespace uwidget {
     inline static constexpr bool can_default_construct = !detail::has_policy_v<policy::NoDefaultConstruct, Policies...>;
 
 
+    auto& get_session() {
+      return Session<Widget>::instance();
+    }
 
     
 
     // default construction
-    Widget() requires(can_default_construct) = default;
+    Widget() requires(can_default_construct) {
+      get_session().template reg<RegisteredData::DefaultConstructions>();
+      get_session().template reg<RegisteredData::ActiveInstances>();
+    }
     Widget() requires(!can_default_construct) = delete;
 
+    // destruction
+    ~Widget() {
+      get_session().template reg<RegisteredData::Destructions>();
+      get_session().template dereg<RegisteredData::ActiveInstances>();
+    }
+
     // move construction
-    Widget(Widget&&) requires(can_move) = default;
+    Widget(Widget&&) requires(can_move) {
+      get_session().template reg<RegisteredData::MoveConstructions>();
+      get_session().template reg<RegisteredData::ActiveInstances>();
+    }
     Widget(Widget&&) requires(!can_move) = delete;
 
     // move assignment
-    Widget& operator=(Widget&&) requires(can_move) = default;
+    Widget& operator=(Widget&&) requires(can_move) {
+      get_session().template reg<RegisteredData::MoveAssignments>();
+      return *this;
+    }
     Widget& operator=(Widget&&) requires(!can_move) = delete;
 
     // copy construction
-    Widget(const Widget&) requires(can_copy) = default;
+    Widget(const Widget&) requires(can_copy) {
+      get_session().template reg<RegisteredData::CopyConstructions>();
+      get_session().template reg<RegisteredData::ActiveInstances>();
+    }
     Widget(const Widget&) requires(!can_copy) = delete;
 
     // copy assignment
-    Widget& operator=(const Widget&) requires(can_copy) = default;
+    Widget& operator=(const Widget&) requires(can_copy) {
+      get_session().template reg<RegisteredData::CopyAssignments>();
+      return *this;
+    }
     Widget& operator=(const Widget&) requires(!can_copy) = delete;
 
-
-    private:
-    Session* session_;
   };
 
 }
