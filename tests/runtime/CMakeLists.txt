@@ -19,3 +19,4 @@ uw_add_runtime_test(track_move_assign PASS)
 uw_add_runtime_test(track_move_construct PASS)
 
 uw_add_runtime_test(track_lifetimes PASS)
+uw_add_runtime_test(value_primitive_preservation PASS)

@@ -12,6 +12,7 @@ enum class RegisteredData: uint8_t {
   CopyAssignments,
   MoveConstructions,
   MoveAssignments,
+  ValueConstruction,
   _COUNT
 };
 
@@ -25,8 +26,7 @@ public:
   }
 
   void reset() {
-    auto& s = Session::instance().data_;
-    s.data_.fill(0);
+    data_.fill(0);
   }
 
   template <RegisteredData data>
