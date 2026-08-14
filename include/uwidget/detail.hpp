@@ -12,10 +12,5 @@ namespace uwidget::detail {
   using namespace policy;
   template<typename Target>
   inline constexpr bool is_policy_v =
-    std::is_same_v<Target, NoDefaultConstruct> ||
-    std::is_same_v<Target, NoCopy> ||
-    std::is_same_v<Target, NoMove> ||
-    std::is_same_v<Target, ThrowOnDefaultConstruction> ||
-    std::is_same_v<Target, ThrowOnCopy> ||
-    std::is_same_v<Target, ThrowOnMove>;
+    std::is_base_of_v<policy::policy_base, Target>;
 }
