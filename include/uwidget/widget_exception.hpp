@@ -1,15 +1,11 @@
 #pragma once
 
-#include <exception>
+#include <stdexcept>
 
 namespace uwidget {
-class WidgetException : std::exception {
+class WidgetException : public std::runtime_error {
   public:
-    explicit WidgetException(const char* msg) : msg_{msg} {};
-    const char* what() const noexcept override {return msg_; }
-  private:
-    const char* msg_;
-
+    explicit WidgetException(const char* msg) : runtime_error{msg} {};
   };
 
 }

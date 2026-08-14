@@ -9,7 +9,6 @@ namespace uwidget::detail {
   std::is_same_v<TargetT, FirstT> ||
   (std::is_same_v<TargetT, Policies> || ...);
 
-  using namespace policy;
   template<typename Target>
   inline constexpr bool is_policy_v =
     std::is_base_of_v<policy::policy_base, Target>;

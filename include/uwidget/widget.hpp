@@ -46,7 +46,6 @@ namespace uwidget {
       get_session().template reg<RegisteredData::DefaultConstructions>();
       get_session().template reg<RegisteredData::ActiveInstances>();
     }
-    Widget() requires(!can_default_construct) = delete;
 
     // value construction
     explicit Widget(const value_t& x) : value{x} {
@@ -66,17 +65,17 @@ namespace uwidget {
     }
 
     // move construction
-    Widget(Widget&& other) noexcept(!w_has_policy_v<detail::ThrowOnMove>) requires(can_move) : value{std::move(other.value)} {
-      if constexpr(w_has_policy_v<policy::ThrowOnMove>) {
-        throw WidgetException("uwidget: ThrowOnMove");
-      }
+    Widget(Widget&& other) noexcept(!w_has_policy_v<policy::ThrowOnMove>) requires(can_move) :
+      value{w_has_policy_v<policy::ThrowOnMove> ? throw WidgetException("uwidget: ThrowOnMove")
+                                                : std::move(other.value)}
+    {
       get_session().template reg<RegisteredData::MoveConstructions>();
       get_session().template reg<RegisteredData::ActiveInstances>();
     }
-    Widget(Widget&&) requires(!can_move) = delete;
+    Widget(Widget&& other)  = delete;
 
     // move assignment
-    Widget& operator=(Widget&& other) noexcept(!w_has_policy_v<detail::ThrowOnMove>) requires(can_move) {
+    Widget& operator=(Widget&& other) noexcept(!w_has_policy_v<policy::ThrowOnMove>) requires(can_move) {
       if constexpr(w_has_policy_v<policy::ThrowOnMove>) {
         throw WidgetException("uwidget: ThrowOnMove");
       }
@@ -84,17 +83,16 @@ namespace uwidget {
       value = std::move(other.value);
       return *this;
     }
-    Widget& operator=(Widget&&) requires(!can_move) = delete;
+    Widget& operator=(Widget&& other) = delete;
 
     // copy construction
-    Widget(const Widget& other) requires(can_copy) : value{other.value} {
-      if constexpr(w_has_policy_v<policy::ThrowOnCopy>) {
-        throw WidgetException("uwidget: ThrowOnCopy");
-      }
+    Widget(const Widget& other) requires(can_copy) :
+      value{w_has_policy_v<policy::ThrowOnCopy> ? throw WidgetException("uwidget: ThrowOnCopy")
+                                                : other.value}
+    {
       get_session().template reg<RegisteredData::CopyConstructions>();
       get_session().template reg<RegisteredData::ActiveInstances>();
     }
-    Widget(const Widget&) requires(!can_copy) = delete;
 
     // copy assignment
     Widget& operator=(const Widget& other) requires(can_copy) {
@@ -105,7 +103,6 @@ namespace uwidget {
       value = other.value;
       return *this;
     }
-    Widget& operator=(const Widget&) requires(!can_copy) = delete;
 
   };
 
