@@ -4,9 +4,9 @@
 using namespace uwidget;
 
 int main() {
-  using DefaultWidget = Widget<>;
-  using CurrentSession = Session<Widget<>>;
-  Widget<> w{};
+  using Default_w = Widget<>;
+  using CurrentSession = Session<Default_w>;
+  Default_w w{};
 
   assert(CurrentSession::get_data<RegisteredData::DefaultConstructions>() == 1);
 

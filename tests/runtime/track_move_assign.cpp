@@ -4,13 +4,13 @@
 using namespace uwidget;
 
 int main() {
-  using DefaultWidget = Widget<>;
-  using CurrentSession = Session<Widget<>>;
+  using Default_w = Widget<>;
+  using CurrentSession = Session<Default_w>;
 
-  Widget<> w_move_from1{};
-  Widget<> w_move_from2{};
-  Widget<> w1{};
-  Widget<> w2{};
+  Default_w w_move_from1{};
+  Default_w w_move_from2{};
+  Default_w w1{};
+  Default_w w2{};
   w1 = std::move(w_move_from1);
   w2 = std::move(w_move_from2);
 

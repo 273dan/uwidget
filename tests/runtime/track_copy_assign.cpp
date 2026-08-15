@@ -4,11 +4,11 @@
 using namespace uwidget;
 
 int main() {
-  using DefaultWidget = Widget<>;
-  using CurrentSession = Session<Widget<>>;
-  Widget<> w{};
-  Widget<> w1{};
-  Widget<> w2{};
+  using Default_w = Widget<>;
+  using CurrentSession = Session<Default_w>;
+  Default_w w{};
+  Default_w w1{};
+  Default_w w2{};
 
   w1 = w;
   w2 = w;

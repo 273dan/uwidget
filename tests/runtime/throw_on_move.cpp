@@ -4,16 +4,16 @@
 using namespace uwidget;
 
 int main() {
-  using TestWidget = Widget<policy::ThrowOnMove>;
-  using TestSession = Session<TestWidget>;
+  using ThrowOnMove_w = Widget<policy::ThrowOnMove>;
+  using TestSession = Session<ThrowOnMove_w>;
 
-  TestWidget w1{};
+  ThrowOnMove_w w1{};
 
   bool caught = false;
 
   assert(TestSession::get_data<RegisteredData::ActiveInstances>() == 1);
   try {
-    TestWidget w2 = std::move(w1);
+    ThrowOnMove_w w2 = std::move(w1);
   } catch (const WidgetException& e) {
     caught = true;
   }

@@ -5,14 +5,14 @@
 using namespace uwidget;
 
 int main() {
-  using TestWidget = Widget<int, policy::ThrowOnDefaultConstruction>;
-  using TestSession = Session<TestWidget>;
+  using ThrowOnDefault_w = Widget<int, policy::ThrowOnDefaultConstruction>;
+  using TestSession = Session<ThrowOnDefault_w>;
 
-  TestWidget w1{42};
+  ThrowOnDefault_w w1{42};
 
   bool caught{false};
   try {
-    TestWidget w2;
+    ThrowOnDefault_w w2;
   } catch (const WidgetException& e) {
     caught = true;
   }
