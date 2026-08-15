@@ -4,7 +4,6 @@
 #include <type_traits>
 #include <compare>
 #include "policy.hpp"
-#include "session.hpp"
 #include "detail.hpp"
 #include "widget_exception.hpp"
 
@@ -13,6 +12,16 @@ namespace uwidget {
   template <typename ...Policies>
   class Widget {
   public:
+
+    inline static thread_local size_t active_instances = 0;
+    inline static thread_local size_t destructions = 0;
+    inline static thread_local size_t default_constructions = 0;
+    inline static thread_local size_t copy_constructions = 0;
+    inline static thread_local size_t copy_assignments = 0;
+    inline static thread_local size_t move_constructions = 0;
+    inline static thread_local size_t move_assignments = 0;
+    inline static thread_local size_t value_constructions = 0;
+
     template <typename TargetT>
     inline static constexpr bool w_has_policy_v = detail::has_policy_v<TargetT, Policies...>;
 
@@ -46,10 +55,17 @@ namespace uwidget {
       std::is_default_constructible_v<value_t>;
 
     /**
-     * @brief Helper method to get this specific Widget's session type.
+     * @brief Reset all tracked metric counters to 0 for this Widget type.
      */
-    auto& get_session() {
-      return Session<Widget>::instance();
+    static void reset_metrics() {
+      active_instances = 0;
+      destructions = 0;
+      default_constructions = 0;
+      copy_constructions = 0;
+      copy_assignments = 0;
+      move_constructions = 0;
+      move_assignments = 0;
+      value_constructions = 0;
     }
 
     /**
@@ -60,32 +76,32 @@ namespace uwidget {
       if constexpr(w_has_policy_v<policy::ThrowOnDefaultConstruction>) {
         throw WidgetException("uwidget: ThrowOnDefaultconstruction");
       }
-      get_session().template reg<RegisteredData::DefaultConstruction>();
-      get_session().template reg<RegisteredData::ActiveInstance>();
+      default_constructions++;
+      active_instances++;
     }
 
     /**
      * @brief lvalue Value construction. Copy constructs value and records this in the session.
      */
     explicit Widget(const value_t& x) : value{x} {
-      get_session().template reg<RegisteredData::ValueConstruction>();
-      get_session().template reg<RegisteredData::ActiveInstance>();
+      value_constructions++;
+      active_instances++;
     }
 
     /**
      * @brief rvalue Value construction. Move constructs value and records this in the session.
      */
     explicit Widget(value_t&& x) : value{std::move(x)} {
-      get_session().template reg<RegisteredData::ValueConstruction>();
-      get_session().template reg<RegisteredData::ActiveInstance>();
+      value_constructions++;
+      active_instances++;
     }
 
     /**
      * @brief Destructor. Records this in the session.
      */
     ~Widget() {
-      get_session().template reg<RegisteredData::Destruction>();
-      get_session().template dereg<RegisteredData::ActiveInstance>();
+      destructions++;
+      active_instances--;
     }
 
     /**
@@ -102,8 +118,8 @@ namespace uwidget {
       value{w_has_policy_v<policy::ThrowOnMove> ? throw WidgetException("uwidget: ThrowOnMove")
                                                 : std::move(other.value)}
     {
-      get_session().template reg<RegisteredData::MoveConstruction>();
-      get_session().template reg<RegisteredData::ActiveInstance>();
+      move_constructions++;
+      active_instances++;
     }
 
     /**
@@ -126,7 +142,7 @@ namespace uwidget {
       if constexpr(w_has_policy_v<policy::ThrowOnMove>) {
         throw WidgetException("uwidget: ThrowOnMove");
       }
-      get_session().template reg<RegisteredData::MoveAssignment>();
+      move_assignments++;
       value = std::move(other.value);
       return *this;
     }
@@ -145,8 +161,8 @@ namespace uwidget {
       value{w_has_policy_v<policy::ThrowOnCopy> ? throw WidgetException("uwidget: ThrowOnCopy")
                                                 : other.value}
     {
-      get_session().template reg<RegisteredData::CopyConstruction>();
-      get_session().template reg<RegisteredData::ActiveInstance>();
+      copy_constructions++;
+      active_instances++;
     }
 
     /**
@@ -157,7 +173,7 @@ namespace uwidget {
       if constexpr(w_has_policy_v<policy::ThrowOnCopy>) {
         throw WidgetException("uwidget: ThrowOnCopy");
       }
-      get_session().template reg<RegisteredData::CopyAssignment>();
+      copy_assignments++;
       value = other.value;
       return *this;
     }

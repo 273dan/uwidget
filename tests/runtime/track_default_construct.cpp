@@ -6,12 +6,7 @@ using namespace uwidget::policy;
 
 int main() {
   using Default_w = Widget<>;
-  using CurrentSession = Session<Default_w>;
   Default_w w{};
 
-  assert(CurrentSession::get_data<RegisteredData::DefaultConstruction>() == 1);
-
-
-
-
+  assert(Default_w::default_constructions == 1);
 }

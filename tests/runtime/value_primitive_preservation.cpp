@@ -6,12 +6,11 @@ using namespace uwidget::policy;
 
 int main() {
   using Int_w = Widget<Value<int>>;
-  using CurrentSession = Session<Int_w>;
 
   Int_w w1{42};
 
   assert(w1.value == 42);
-  assert(CurrentSession::get_data<RegisteredData::ValueConstruction>() == 1);
+  assert(Int_w::value_constructions == 1);
 
   // copy construction
   Int_w w2{w1};

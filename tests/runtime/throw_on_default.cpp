@@ -7,7 +7,6 @@ using namespace uwidget::policy;
 
 int main() {
   using ThrowOnDefault_w = Widget<ThrowOnDefaultConstruction>;
-  using TestSession = Session<ThrowOnDefault_w>;
 
   ThrowOnDefault_w w1{42};
 
@@ -18,6 +17,5 @@ int main() {
     caught = true;
   }
   assert(caught == true);
-  assert(TestSession::get_data<RegisteredData::ActiveInstance>() == 1);
-
+  assert(ThrowOnDefault_w::active_instances == 1);
 }

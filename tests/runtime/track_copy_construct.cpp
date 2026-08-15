@@ -6,12 +6,11 @@ using namespace uwidget::policy;
 
 int main() {
   using Default_w = Widget<>;
-  using CurrentSession = Session<Default_w>;
 
   Default_w w{};
   Default_w w1{w};
   Default_w w2{w};
 
 
-  assert(CurrentSession::get_data<RegisteredData::CopyConstruction>() == 2);
+  assert(Default_w::copy_constructions == 2);
 }
