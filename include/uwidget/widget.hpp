@@ -67,7 +67,12 @@ namespace uwidget {
     }
 
     // move construction
-    Widget(Widget&& other) noexcept(!w_has_policy_v<policy::ThrowOnMove>) requires(can_move) :
+    Widget(Widget&& other)
+      noexcept(
+          !w_has_policy_v<policy::ThrowOnMove> &&
+          std::is_nothrow_move_constructible_v<value_t>
+      )
+      requires(can_move) :
       value{w_has_policy_v<policy::ThrowOnMove> ? throw WidgetException("uwidget: ThrowOnMove")
                                                 : std::move(other.value)}
     {
@@ -77,7 +82,12 @@ namespace uwidget {
     Widget(Widget&& other)  = delete;
 
     // move assignment
-    Widget& operator=(Widget&& other) noexcept(!w_has_policy_v<policy::ThrowOnMove>) requires(can_move) {
+    Widget& operator=(Widget&& other)
+      noexcept(
+          !w_has_policy_v<policy::ThrowOnMove> &&
+          std::is_nothrow_move_assignable_v<value_t>
+      )
+      requires(can_move) {
       if constexpr(w_has_policy_v<policy::ThrowOnMove>) {
         throw WidgetException("uwidget: ThrowOnMove");
       }
