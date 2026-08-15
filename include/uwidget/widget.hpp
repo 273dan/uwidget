@@ -1,6 +1,8 @@
 #pragma once
 
+#include <concepts>
 #include <type_traits>
+#include <compare>
 #include "policy.hpp"
 #include "session.hpp"
 #include "detail.hpp"
@@ -160,6 +162,37 @@ namespace uwidget {
       return *this;
     }
 
+
   };
 
+  /**
+   * @brief Spaceship operator. Compares Widget.value.
+   * Requires value_t to be three way comparable
+   */
+  template <typename ...Policies>
+  constexpr auto operator <=>(const Widget<Policies...>& l, const Widget<Policies...>& r)
+    requires(std::three_way_comparable<typename Widget<Policies...>::value_t>) {
+      return l.value <=> r.value;
+    }
+
+  /**
+   * @brief Equality comparison operator. Compares value.
+   * Requires value_t to be equality comparable
+   */
+  template <typename ...Policies>
+  constexpr bool operator==(const Widget<Policies...>& l, const Widget<Policies...>& r)
+    requires(std::equality_comparable<typename Widget<Policies...>::value_t>) {
+      return l.value == r.value;
+    }
+
+}
+
+namespace std {
+  template <typename ...Policies>
+    struct hash<uwidget::Widget<Policies...>> {
+      size_t operator()(const uwidget::Widget<Policies...>& w) const noexcept {
+        using V = typename uwidget::Widget<Policies...>::value_t;
+        return std::hash<V>{}(w.value);
+      }
+    };
 }
