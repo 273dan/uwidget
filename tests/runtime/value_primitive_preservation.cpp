@@ -4,7 +4,7 @@
 using namespace uwidget;
 
 int main() {
-  using Int_w = Widget<int>;
+  using Int_w = Widget<policy::Value<int>>;
   using CurrentSession = Session<Int_w>;
 
   Int_w w1{42};

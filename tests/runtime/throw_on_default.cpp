@@ -5,7 +5,7 @@
 using namespace uwidget;
 
 int main() {
-  using ThrowOnDefault_w = Widget<int, policy::ThrowOnDefaultConstruction>;
+  using ThrowOnDefault_w = Widget<policy::ThrowOnDefaultConstruction>;
   using TestSession = Session<ThrowOnDefault_w>;
 
   ThrowOnDefault_w w1{42};

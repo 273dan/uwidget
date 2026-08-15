@@ -8,19 +8,17 @@
 
 namespace uwidget {
   
-  //                 a single policied-widget will have that policy interpreted as "ValueT", so 
-  //                 we call the first parameter FirstOrValueT
-  //                 v
-  template <typename FirstOrValueT = int, typename ...Policies>
+  template <typename ...Policies>
   class Widget {
   public:
     template <typename TargetT>
-    inline static constexpr bool w_has_policy_v = detail::has_policy_v<TargetT, FirstOrValueT, Policies...>;
+    inline static constexpr bool w_has_policy_v = detail::has_policy_v<TargetT, Policies...>;
 
-    using value_t = std::conditional_t<detail::is_policy_v<FirstOrValueT>, int, FirstOrValueT>;
+    using value_t = detail::get_value_type_t<int, Policies...>;
     value_t value;
 
     static_assert((detail::is_policy_v<Policies> && ...), "all types in Policies must inherit from policy_base");
+    static_assert(!detail::contains_multiple_value_policies_v<Policies...>, "Widget must contain at most 1 Value policy");
 
     /**
      * @brief Helper member to indicate if this widget can be moved

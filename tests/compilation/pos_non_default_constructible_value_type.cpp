@@ -9,7 +9,7 @@ struct NonDefaultConstructible {
 
 using namespace uwidget;
 
-using NonDefaultConstructibleValued_w = Widget<NonDefaultConstructible>;
+using NonDefaultConstructibleValued_w = Widget<policy::Value<NonDefaultConstructible>>;
 
 static_assert(!std::is_default_constructible_v<NonDefaultConstructibleValued_w>, "Widget should not be default constructible with non-default constructible value");
 static_assert(std::is_constructible_v<NonDefaultConstructibleValued_w, NonDefaultConstructible>, "Widget should still be value constructible");

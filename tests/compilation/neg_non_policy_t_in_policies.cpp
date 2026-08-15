@@ -1,7 +1,7 @@
 #include "uwidget/uwidget.hpp"
 
 using namespace uwidget;
-using NonPolicyTInPolicies_w = Widget<int, policy::NoMove, double>;
+using NonPolicyTInPolicies_w = Widget<int, policy::NoMove>;
 
 NonPolicyTInPolicies_w x{};
 

@@ -7,6 +7,13 @@ namespace uwidget::policy {
    */
   struct policy_base {};
   
+
+  /**
+   * @brief Determines the type of the Widget's member. Defaults to int
+   */
+  template <typename T>
+  struct Value : policy_base{};
+
   /**
    * @brief Deletes move both operations
    */
