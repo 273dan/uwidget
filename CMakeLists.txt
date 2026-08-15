@@ -5,6 +5,7 @@ project(uwidget VERSION 0.1.0 LANGUAGES CXX)
 
 set(UW_LIB uwidget)
 set(UW_LIB_TARGETS uwidgetTargets)
+set(UW_LIB_CONFIG uwidgetConfig)
 
 add_library(${UW_LIB} INTERFACE)
 add_library(${UW_LIB}::${UW_LIB} ALIAS ${UW_LIB})
@@ -20,7 +21,7 @@ include(GNUInstallDirs)
 install(TARGETS ${UW_LIB} EXPORT ${UW_LIB_TARGETS})
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(EXPORT ${UW_LIB_TARGETS}
-  FILE ${UW_LIB_TARGETS}.cmake
+  FILE ${UW_LIB_CONFIG}.cmake
   NAMESPACE ${UW_LIB}::
   DESTINATION ${CMAKE_INSTALL_DATADIR}/cmake/${UW_LIB}
 )
