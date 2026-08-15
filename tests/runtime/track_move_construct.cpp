@@ -14,5 +14,5 @@ int main() {
   Default_w w2{std::move(w_move_from2)};
 
 
-  assert(CurrentSession::get_data<RegisteredData::MoveConstructions>() == 2);
+  assert(CurrentSession::get_data<RegisteredData::MoveConstruction>() == 2);
 }

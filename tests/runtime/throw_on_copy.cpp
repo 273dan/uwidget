@@ -12,13 +12,13 @@ int main() {
 
   bool caught = false;
 
-  assert(TestSession::get_data<RegisteredData::ActiveInstances>() == 1);
+  assert(TestSession::get_data<RegisteredData::ActiveInstance>() == 1);
   try {
     ThrowOnCopy_w w2 = w1;
   } catch (const WidgetException& e) {
     caught = true;
   }
   assert(caught == true);
-  assert(TestSession::get_data<RegisteredData::ActiveInstances>() == 1);
+  assert(TestSession::get_data<RegisteredData::ActiveInstance>() == 1);
 
 }

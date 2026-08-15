@@ -5,13 +5,13 @@
 namespace uwidget {
 
 enum class RegisteredData: uint8_t {
-  ActiveInstances = 0,
-  Destructions,
-  DefaultConstructions,
-  CopyConstructions,
-  CopyAssignments,
-  MoveConstructions,
-  MoveAssignments,
+  ActiveInstance = 0,
+  Destruction,
+  DefaultConstruction,
+  CopyConstruction,
+  CopyAssignment,
+  MoveConstruction,
+  MoveAssignment,
   ValueConstruction,
   _COUNT
 };

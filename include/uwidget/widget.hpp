@@ -60,8 +60,8 @@ namespace uwidget {
       if constexpr(w_has_policy_v<policy::ThrowOnDefaultConstruction>) {
         throw WidgetException("uwidget: ThrowOnDefaultconstruction");
       }
-      get_session().template reg<RegisteredData::DefaultConstructions>();
-      get_session().template reg<RegisteredData::ActiveInstances>();
+      get_session().template reg<RegisteredData::DefaultConstruction>();
+      get_session().template reg<RegisteredData::ActiveInstance>();
     }
 
     /**
@@ -69,7 +69,7 @@ namespace uwidget {
      */
     explicit Widget(const value_t& x) : value{x} {
       get_session().template reg<RegisteredData::ValueConstruction>();
-      get_session().template reg<RegisteredData::ActiveInstances>();
+      get_session().template reg<RegisteredData::ActiveInstance>();
     }
 
     /**
@@ -77,15 +77,15 @@ namespace uwidget {
      */
     explicit Widget(value_t&& x) : value{std::move(x)} {
       get_session().template reg<RegisteredData::ValueConstruction>();
-      get_session().template reg<RegisteredData::ActiveInstances>();
+      get_session().template reg<RegisteredData::ActiveInstance>();
     }
 
     /**
      * @brief Destructor. Records this in the session.
      */
     ~Widget() {
-      get_session().template reg<RegisteredData::Destructions>();
-      get_session().template dereg<RegisteredData::ActiveInstances>();
+      get_session().template reg<RegisteredData::Destruction>();
+      get_session().template dereg<RegisteredData::ActiveInstance>();
     }
 
     /**
@@ -102,8 +102,8 @@ namespace uwidget {
       value{w_has_policy_v<policy::ThrowOnMove> ? throw WidgetException("uwidget: ThrowOnMove")
                                                 : std::move(other.value)}
     {
-      get_session().template reg<RegisteredData::MoveConstructions>();
-      get_session().template reg<RegisteredData::ActiveInstances>();
+      get_session().template reg<RegisteredData::MoveConstruction>();
+      get_session().template reg<RegisteredData::ActiveInstance>();
     }
 
     /**
@@ -126,7 +126,7 @@ namespace uwidget {
       if constexpr(w_has_policy_v<policy::ThrowOnMove>) {
         throw WidgetException("uwidget: ThrowOnMove");
       }
-      get_session().template reg<RegisteredData::MoveAssignments>();
+      get_session().template reg<RegisteredData::MoveAssignment>();
       value = std::move(other.value);
       return *this;
     }
@@ -145,8 +145,8 @@ namespace uwidget {
       value{w_has_policy_v<policy::ThrowOnCopy> ? throw WidgetException("uwidget: ThrowOnCopy")
                                                 : other.value}
     {
-      get_session().template reg<RegisteredData::CopyConstructions>();
-      get_session().template reg<RegisteredData::ActiveInstances>();
+      get_session().template reg<RegisteredData::CopyConstruction>();
+      get_session().template reg<RegisteredData::ActiveInstance>();
     }
 
     /**
@@ -157,7 +157,7 @@ namespace uwidget {
       if constexpr(w_has_policy_v<policy::ThrowOnCopy>) {
         throw WidgetException("uwidget: ThrowOnCopy");
       }
-      get_session().template reg<RegisteredData::CopyAssignments>();
+      get_session().template reg<RegisteredData::CopyAssignment>();
       value = other.value;
       return *this;
     }

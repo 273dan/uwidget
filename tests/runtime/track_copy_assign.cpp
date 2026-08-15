@@ -14,5 +14,5 @@ int main() {
   w1 = w;
   w2 = w;
 
-  assert(CurrentSession::get_data<RegisteredData::CopyAssignments>() == 2);
+  assert(CurrentSession::get_data<RegisteredData::CopyAssignment>() == 2);
 }

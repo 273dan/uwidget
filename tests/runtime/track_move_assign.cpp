@@ -16,5 +16,5 @@ int main() {
   w2 = std::move(w_move_from2);
 
 
-  assert(CurrentSession::get_data<RegisteredData::MoveAssignments>() == 2);
+  assert(CurrentSession::get_data<RegisteredData::MoveAssignment>() == 2);
 }

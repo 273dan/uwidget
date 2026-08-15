@@ -13,5 +13,5 @@ int main() {
   Default_w w2{w};
 
 
-  assert(CurrentSession::get_data<RegisteredData::CopyConstructions>() == 2);
+  assert(CurrentSession::get_data<RegisteredData::CopyConstruction>() == 2);
 }

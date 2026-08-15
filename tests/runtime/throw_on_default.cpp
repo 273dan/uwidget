@@ -18,6 +18,6 @@ int main() {
     caught = true;
   }
   assert(caught == true);
-  assert(TestSession::get_data<RegisteredData::ActiveInstances>() == 1);
+  assert(TestSession::get_data<RegisteredData::ActiveInstance>() == 1);
 
 }

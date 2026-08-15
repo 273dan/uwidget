@@ -9,7 +9,7 @@ int main() {
   using CurrentSession = Session<Default_w>;
   Default_w w{};
 
-  assert(CurrentSession::get_data<RegisteredData::DefaultConstructions>() == 1);
+  assert(CurrentSession::get_data<RegisteredData::DefaultConstruction>() == 1);
 
 
 
