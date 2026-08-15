@@ -12,5 +12,5 @@ int main() {
   Default_w w2{w};
 
 
-  assert(Default_w::copy_constructions == 2);
+  assert(Default_w::copy_constructions() == 2);
 }

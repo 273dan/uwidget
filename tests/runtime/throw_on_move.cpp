@@ -11,12 +11,12 @@ int main() {
 
   bool caught = false;
 
-  assert(ThrowOnMove_w::active_instances == 1);
+  assert(ThrowOnMove_w::active_instances() == 1);
   try {
     ThrowOnMove_w w2 = std::move(w1);
   } catch (const WidgetException& e) {
     caught = true;
   }
   assert(caught == true);
-  assert(ThrowOnMove_w::active_instances == 1);
+  assert(ThrowOnMove_w::active_instances() == 1);
 }

@@ -15,5 +15,5 @@ int main() {
   w2 = std::move(w_move_from2);
 
 
-  assert(Default_w::move_assignments == 2);
+  assert(Default_w::move_assignments() == 2);
 }

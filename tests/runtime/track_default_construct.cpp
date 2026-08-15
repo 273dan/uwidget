@@ -8,5 +8,5 @@ int main() {
   using Default_w = Widget<>;
   Default_w w{};
 
-  assert(Default_w::default_constructions == 1);
+  assert(Default_w::default_constructions() == 1);
 }

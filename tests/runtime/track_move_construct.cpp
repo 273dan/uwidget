@@ -13,5 +13,5 @@ int main() {
   Default_w w2{std::move(w_move_from2)};
 
 
-  assert(Default_w::move_constructions == 2);
+  assert(Default_w::move_constructions() == 2);
 }

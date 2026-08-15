@@ -13,5 +13,5 @@ int main() {
   w1 = w;
   w2 = w;
 
-  assert(Default_w::copy_assignments == 2);
+  assert(Default_w::copy_assignments() == 2);
 }

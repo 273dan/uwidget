@@ -10,7 +10,7 @@ int main() {
   Int_w w1{42};
 
   assert(w1.value == 42);
-  assert(Int_w::value_constructions == 1);
+  assert(Int_w::value_constructions() == 1);
 
   // copy construction
   Int_w w2{w1};

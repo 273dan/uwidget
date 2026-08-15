@@ -17,5 +17,5 @@ int main() {
     caught = true;
   }
   assert(caught == true);
-  assert(ThrowOnDefault_w::active_instances == 1);
+  assert(ThrowOnDefault_w::active_instances() == 1);
 }

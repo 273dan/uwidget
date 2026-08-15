@@ -6,6 +6,7 @@
 #include "policy.hpp"
 #include "detail.hpp"
 #include "widget_exception.hpp"
+#include "operation.hpp"
 
 namespace uwidget {
   
@@ -13,14 +14,19 @@ namespace uwidget {
   class Widget {
   public:
 
-    inline static thread_local size_t active_instances = 0;
-    inline static thread_local size_t destructions = 0;
-    inline static thread_local size_t default_constructions = 0;
-    inline static thread_local size_t copy_constructions = 0;
-    inline static thread_local size_t copy_assignments = 0;
-    inline static thread_local size_t move_constructions = 0;
-    inline static thread_local size_t move_assignments = 0;
-    inline static thread_local size_t value_constructions = 0;
+    template <Op op>
+    static size_t& get_metric() {
+      return metrics_[static_cast<uint8_t>(op)];
+    }
+
+    static size_t active_instances() { return get_metric<Op::ActiveInstance>(); }
+    static size_t destructions() { return get_metric<Op::Destruction>(); }
+    static size_t copy_constructions() { return get_metric<Op::CopyConstruction>(); }
+    static size_t move_constructions() { return get_metric<Op::MoveConstruction>(); }
+    static size_t copy_assignments() { return get_metric<Op::CopyAssignment>(); }
+    static size_t move_assignments() { return get_metric<Op::MoveAssignment>(); }
+    static size_t default_constructions() { return get_metric<Op::DefaultConstruction>(); }
+    static size_t value_constructions() { return get_metric<Op::ValueConstruction>(); }
 
     template <typename TargetT>
     inline static constexpr bool w_has_policy_v = detail::has_policy_v<TargetT, Policies...>;
@@ -58,14 +64,7 @@ namespace uwidget {
      * @brief Reset all tracked metric counters to 0 for this Widget type.
      */
     static void reset_metrics() {
-      active_instances = 0;
-      destructions = 0;
-      default_constructions = 0;
-      copy_constructions = 0;
-      copy_assignments = 0;
-      move_constructions = 0;
-      move_assignments = 0;
-      value_constructions = 0;
+      metrics_.fill(0);
     }
 
     /**
@@ -76,32 +75,32 @@ namespace uwidget {
       if constexpr(w_has_policy_v<policy::ThrowOnDefaultConstruction>) {
         throw WidgetException("uwidget: ThrowOnDefaultconstruction");
       }
-      default_constructions++;
-      active_instances++;
+      get_metric<Op::DefaultConstruction>()++;
+      get_metric<Op::ActiveInstance>()++;
     }
 
     /**
      * @brief lvalue Value construction. Copy constructs value and records this in the session.
      */
     explicit Widget(const value_t& x) : value{x} {
-      value_constructions++;
-      active_instances++;
+      get_metric<Op::ValueConstruction>()++;
+      get_metric<Op::ActiveInstance>()++;
     }
 
     /**
      * @brief rvalue Value construction. Move constructs value and records this in the session.
      */
     explicit Widget(value_t&& x) : value{std::move(x)} {
-      value_constructions++;
-      active_instances++;
+      get_metric<Op::ValueConstruction>()++;
+      get_metric<Op::ActiveInstance>()++;
     }
 
     /**
      * @brief Destructor. Records this in the session.
      */
     ~Widget() {
-      destructions++;
-      active_instances--;
+      get_metric<Op::Destruction>()++;
+      get_metric<Op::ActiveInstance>()--;
     }
 
     /**
@@ -118,8 +117,8 @@ namespace uwidget {
       value{w_has_policy_v<policy::ThrowOnMove> ? throw WidgetException("uwidget: ThrowOnMove")
                                                 : std::move(other.value)}
     {
-      move_constructions++;
-      active_instances++;
+      get_metric<Op::MoveConstruction>()++;
+      get_metric<Op::ActiveInstance>()++;
     }
 
     /**
@@ -142,7 +141,7 @@ namespace uwidget {
       if constexpr(w_has_policy_v<policy::ThrowOnMove>) {
         throw WidgetException("uwidget: ThrowOnMove");
       }
-      move_assignments++;
+      get_metric<Op::MoveAssignment>()++;
       value = std::move(other.value);
       return *this;
     }
@@ -161,8 +160,8 @@ namespace uwidget {
       value{w_has_policy_v<policy::ThrowOnCopy> ? throw WidgetException("uwidget: ThrowOnCopy")
                                                 : other.value}
     {
-      copy_constructions++;
-      active_instances++;
+      get_metric<Op::CopyConstruction>()++;
+      get_metric<Op::ActiveInstance>()++;
     }
 
     /**
@@ -173,11 +172,13 @@ namespace uwidget {
       if constexpr(w_has_policy_v<policy::ThrowOnCopy>) {
         throw WidgetException("uwidget: ThrowOnCopy");
       }
-      copy_assignments++;
+      get_metric<Op::CopyAssignment>()++;
       value = other.value;
       return *this;
     }
 
+  private:
+    inline static thread_local std::array<size_t, static_cast<uint8_t>(Op::_COUNT)> metrics_{};
 
   };
 
@@ -200,7 +201,6 @@ namespace uwidget {
     requires(std::equality_comparable<typename Widget<Policies...>::value_t>) {
       return l.value == r.value;
     }
-
 }
 
 namespace std {
@@ -211,4 +211,5 @@ namespace std {
         return std::hash<V>{}(w.value);
       }
     };
+
 }
