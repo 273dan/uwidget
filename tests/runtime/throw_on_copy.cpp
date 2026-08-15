@@ -2,9 +2,10 @@
 #include <cassert>
 
 using namespace uwidget;
+using namespace uwidget::policy;
 
 int main() {
-  using ThrowOnCopy_w = Widget<policy::ThrowOnCopy>;
+  using ThrowOnCopy_w = Widget<ThrowOnCopy>;
   using TestSession = Session<ThrowOnCopy_w>;
 
   ThrowOnCopy_w w1{};

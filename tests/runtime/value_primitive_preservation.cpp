@@ -2,9 +2,10 @@
 #include <cassert>
 
 using namespace uwidget;
+using namespace uwidget::policy;
 
 int main() {
-  using Int_w = Widget<policy::Value<int>>;
+  using Int_w = Widget<Value<int>>;
   using CurrentSession = Session<Int_w>;
 
   Int_w w1{42};

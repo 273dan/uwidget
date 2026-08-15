@@ -2,6 +2,7 @@
 #include <cassert>
 
 using namespace uwidget;
+using namespace uwidget::policy;
 
 int main() {
   using Default_w = Widget<>;

@@ -2,9 +2,10 @@
 #include <type_traits>
 
 using namespace uwidget;
-using NoCopy_w = Widget<policy::NoCopy>;
-using NoMove_w = Widget<policy::NoMove>;
-using ThrowOnMove_w = Widget<policy::ThrowOnMove>;
+using namespace uwidget::policy;
+using NoCopy_w = Widget<NoCopy>;
+using NoMove_w = Widget<NoMove>;
+using ThrowOnMove_w = Widget<ThrowOnMove>;
 
 static_assert(!std::is_copy_assignable_v<NoCopy_w>, "No copy widget should not be copy assignable");
 static_assert(!std::is_copy_constructible_v<NoCopy_w>, "No copy widget should not be copy constructable");

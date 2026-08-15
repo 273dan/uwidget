@@ -2,6 +2,7 @@
 #include <type_traits>
 
 using namespace uwidget;
+using namespace uwidget::policy;
 
 using Default_w = Widget<>;
 
