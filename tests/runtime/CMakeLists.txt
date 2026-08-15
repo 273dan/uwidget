@@ -25,3 +25,6 @@ uw_add_runtime_test(value_primitive_preservation PASS)
 uw_add_runtime_test(throw_on_copy PASS)
 uw_add_runtime_test(throw_on_move PASS)
 uw_add_runtime_test(throw_on_default PASS)
+
+uw_add_runtime_test(test_comparators PASS)
+uw_add_runtime_test(test_hash PASS)
