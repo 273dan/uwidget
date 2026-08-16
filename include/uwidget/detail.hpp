@@ -2,6 +2,7 @@
 
 #include <type_traits>
 #include "policy.hpp"
+#include "operation.hpp"
 
 namespace uwidget::detail {
 
@@ -39,6 +40,24 @@ namespace uwidget::detail {
   template <typename ...Policies>
   inline constexpr bool contains_multiple_value_policies_v =
     ((is_value_policy_v<Policies> ? 1 : 0) + ... + 0) >= 2;
+
+  template <Op OpV, typename ...Policies>
+  struct get_throwat_n {
+    static constexpr size_t n = 0;
+  };
+
+  template <Op OpV, size_t N, typename ...Other>
+  struct get_throwat_n<OpV, policy::ThrowOnNthOperation<OpV, N>, Other...> {
+    static constexpr size_t n = N;
+  };
+
+  template <Op OpV, typename First, typename ...Other>
+  struct get_throwat_n<OpV, First, Other...> {
+    static constexpr size_t n = get_throwat_n<OpV, Other...>::n;
+  };
+
+  template <Op OpV, typename ...Policies>
+  inline constexpr size_t get_throwat_n_v = get_throwat_n<OpV, Policies...>::n;
   
 
 

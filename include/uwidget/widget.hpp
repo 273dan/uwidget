@@ -3,6 +3,7 @@
 #include <concepts>
 #include <type_traits>
 #include <compare>
+#include <array>
 #include "policy.hpp"
 #include "detail.hpp"
 #include "widget_exception.hpp"
@@ -46,6 +47,17 @@ namespace uwidget {
       std::is_move_assignable_v<value_t>;
 
     /**
+     * @brief Helper member to indicate if this widget can be moved
+     */
+    inline static constexpr bool can_nothrow_move =
+      !w_has_policy_v<policy::NoMove> &&
+      !w_has_policy_v<policy::ThrowOnMove> &&
+      detail::get_throwat_n_v<Op::MoveAssignment, Policies...> == 0 &&
+      detail::get_throwat_n_v<Op::MoveConstruction, Policies...> == 0 &&
+      std::is_nothrow_move_constructible_v<value_t> &&
+      std::is_nothrow_move_assignable_v<value_t>;
+
+    /**
      * @brief Helper member to indicate if this widget can be copied
      */
     inline static constexpr bool can_copy =
@@ -72,7 +84,7 @@ namespace uwidget {
      * ThrowOnDefaultConstruction widgets will throw without session tracking.
      */
     Widget() requires(can_default_construct) {
-      if constexpr(w_has_policy_v<policy::ThrowOnDefaultConstruction>) {
+      if (should_throw<Op::DefaultConstruction>()) {
         throw WidgetException("uwidget: ThrowOnDefaultconstruction");
       }
       get_metric<Op::DefaultConstruction>()++;
@@ -109,13 +121,10 @@ namespace uwidget {
      * Move construction is noexcept if the widget is not ThrowOnMove and value_t is nothrow move constructible.
      */
     Widget(Widget&& other)
-      noexcept(
-          !w_has_policy_v<policy::ThrowOnMove> &&
-          std::is_nothrow_move_constructible_v<value_t>
-      )
+      noexcept(can_nothrow_move)
       requires(can_move) :
-      value{w_has_policy_v<policy::ThrowOnMove> ? throw WidgetException("uwidget: ThrowOnMove")
-                                                : std::move(other.value)}
+      value{should_throw<Op::MoveConstruction>() ? throw WidgetException("uwidget: ThrowOnMove")
+                                                 : std::move(other.value)}
     {
       get_metric<Op::MoveConstruction>()++;
       get_metric<Op::ActiveInstance>()++;
@@ -133,12 +142,9 @@ namespace uwidget {
      * Move assignment is noexcept if the widget is not ThrowOnMove and value_t is nothrow move assignable.
      */
     Widget& operator=(Widget&& other)
-      noexcept(
-          !w_has_policy_v<policy::ThrowOnMove> &&
-          std::is_nothrow_move_assignable_v<value_t>
-      )
+      noexcept(can_nothrow_move)
       requires(can_move) {
-      if constexpr(w_has_policy_v<policy::ThrowOnMove>) {
+      if (should_throw<Op::MoveAssignment>()) {
         throw WidgetException("uwidget: ThrowOnMove");
       }
       get_metric<Op::MoveAssignment>()++;
@@ -157,8 +163,8 @@ namespace uwidget {
      * ThrowOnCopy widgets will throw before constructor is entered, without session tracking.
      */
     Widget(const Widget& other) requires(can_copy) :
-      value{w_has_policy_v<policy::ThrowOnCopy> ? throw WidgetException("uwidget: ThrowOnCopy")
-                                                : other.value}
+      value{should_throw<Op::CopyConstruction>() ? throw WidgetException("uwidget: ThrowOnCopy")
+                                                 : other.value}
     {
       get_metric<Op::CopyConstruction>()++;
       get_metric<Op::ActiveInstance>()++;
@@ -169,7 +175,7 @@ namespace uwidget {
      * ThrowOnCopy widgets will throw before value is assigned, without session tracking.
      */
     Widget& operator=(const Widget& other) requires(can_copy) {
-      if constexpr(w_has_policy_v<policy::ThrowOnCopy>) {
+      if (should_throw<Op::CopyAssignment>()) {
         throw WidgetException("uwidget: ThrowOnCopy");
       }
       get_metric<Op::CopyAssignment>()++;
@@ -179,6 +185,28 @@ namespace uwidget {
 
   private:
     inline static thread_local std::array<size_t, static_cast<uint8_t>(Op::_COUNT)> metrics_{};
+    
+    template <Op op>
+    inline static bool should_throw() {
+      using namespace policy;
+      if constexpr (w_has_policy_v<ThrowOnCopy> && (op == Op::CopyAssignment || op == Op::CopyConstruction)) {
+        return true;
+      }
+      else if constexpr (w_has_policy_v<ThrowOnMove> && (op == Op::MoveAssignment || op == Op::MoveConstruction)) {
+        return true;
+      }
+      else if constexpr (w_has_policy_v<ThrowOnDefaultConstruction> && op == Op::DefaultConstruction) {
+        return true;
+      }
+      else {
+        constexpr size_t limit = detail::get_throwat_n_v<op, Policies...>;
+        if constexpr (limit > 0) {
+          if (get_metric<op>() == limit - 1) return true;
+        }
+      }
+      return false;
+    }
+
 
   };
 

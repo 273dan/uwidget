@@ -1,6 +1,6 @@
 #pragma once
 
-#include "uwidget/session.hpp"
+#include "uwidget/operation.hpp"
 #include <cstddef>
 namespace uwidget::policy {
 
@@ -49,7 +49,7 @@ namespace uwidget::policy {
   /**
    * @brief Causes the Nth instantiation of the specified operation to throw
    */
-  template <RegisteredData Op, size_t N>
+  template <Op op, size_t N>
   struct ThrowOnNthOperation : policy_base{};
 
 }

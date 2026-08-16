@@ -1,4 +1,7 @@
+#pragma once
+
 #include <cstdint>
+
 namespace uwidget {
 
 enum class Op: uint8_t {
