@@ -5,7 +5,7 @@ using namespace uwidget;
 using namespace uwidget::policy;
 
 int main() {
-  using ThrowOnMove_w = Widget<ThrowOnMove>;
+  using ThrowOnMove_w = Widget<ThrowOn<Op::MoveConstruction>>;
 
   ThrowOnMove_w w1{};
 

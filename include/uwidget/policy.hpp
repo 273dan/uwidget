@@ -17,34 +17,28 @@ namespace uwidget::policy {
   struct Value : policy_base{};
 
   /**
-   * @brief Deletes move both operations
+   * @brief Deletes the operation specified by OpV
+   */
+  template <Op OpV>
+  struct Disable : policy_base{};
+
+  /**
+   * @brief Disables both move operations
+   * This is a shorthand for Disable<Op::MoveConstruction>, Disable<Op::MoveAssignment>
    */
   struct NoMove : policy_base{};
 
   /**
    * @brief Deletes copy both operations
+   * This is a shorthand for Disable<Op::CopyConstruction>, Disable<Op::CopyAssignment>
    */
   struct NoCopy : policy_base{};
 
   /**
-   * @brief Deletes default constructor
+   * @brief Causes the operation specified by OpV to throw
    */
-  struct NoDefaultConstruct : policy_base{};
-
-  /**
-   * @brief Causes move both operations to throw
-   */
-  struct ThrowOnMove : policy_base{};
-
-  /**
-   * @brief Causes copy both operations to throw
-   */
-  struct ThrowOnCopy : policy_base{};
-
-  /**
-   * @brief Causes default construction to throw
-   */
-  struct ThrowOnDefaultConstruction : policy_base{};
+  template <Op OpV>
+  struct ThrowOn : policy_base{};
 
   /**
    * @brief Causes the Nth instantiation of the specified operation to throw

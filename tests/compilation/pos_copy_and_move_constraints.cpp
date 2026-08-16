@@ -5,7 +5,7 @@ using namespace uwidget;
 using namespace uwidget::policy;
 using NoCopy_w = Widget<NoCopy>;
 using NoMove_w = Widget<NoMove>;
-using ThrowOnMove_w = Widget<ThrowOnMove>;
+using ThrowOnMove_w = Widget<ThrowOn<Op::MoveConstruction>, ThrowOn<Op::MoveAssignment>>;
 
 static_assert(!std::is_copy_assignable_v<NoCopy_w>, "No copy widget should not be copy assignable");
 static_assert(!std::is_copy_constructible_v<NoCopy_w>, "No copy widget should not be copy constructable");

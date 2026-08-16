@@ -5,7 +5,7 @@ using namespace uwidget;
 using namespace uwidget::policy;
 
 int main() {
-  using ThrowOnDefault_w = Widget<ThrowOnDefaultConstruction>;
+  using ThrowOnDefault_w = Widget<ThrowOn<Op::DefaultConstruction>>;
 
   ThrowOnDefault_w w1{42};
 

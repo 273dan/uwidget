@@ -5,7 +5,7 @@ using namespace uwidget;
 using namespace uwidget::policy;
 
 int main() {
-  using ThrowOnCopy_w = Widget<ThrowOnCopy>;
+  using ThrowOnCopy_w = Widget<ThrowOn<Op::CopyConstruction>>;
 
   ThrowOnCopy_w w1{};
 

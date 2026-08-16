@@ -40,37 +40,62 @@ namespace uwidget {
     static_assert(!detail::contains_multiple_value_policies_v<Policies...>, "Widget must contain at most 1 Value policy");
 
     /**
-     * @brief Helper member to indicate if this widget can be moved
+     * @brief Helper member to indicate if this widget can be move constructed
      */
-    inline static constexpr bool can_move =
+    inline static constexpr bool can_move_construct =
       !w_has_policy_v<policy::NoMove> &&
-      std::is_move_constructible_v<value_t> &&
+      !w_has_policy_v<policy::Disable<Op::MoveConstruction>> &&
+      std::is_move_constructible_v<value_t>;
+
+    /**
+     * @brief Helper member to indicate if this widget can be move assigned
+     */
+    inline static constexpr bool can_move_assign =
+      !w_has_policy_v<policy::NoMove> &&
+      !w_has_policy_v<policy::Disable<Op::MoveAssignment>> &&
       std::is_move_assignable_v<value_t>;
 
     /**
-     * @brief Helper member to indicate if this widget can be moved
+     * @brief Helper member to indicate if this widget can be nothrow move constructed
      */
-    inline static constexpr bool can_nothrow_move =
+    inline static constexpr bool can_nothrow_move_construct =
       !w_has_policy_v<policy::NoMove> &&
-      !w_has_policy_v<policy::ThrowOnMove> &&
-      detail::get_throwat_n_v<Op::MoveAssignment, Policies...> == 0 &&
+      !w_has_policy_v<policy::ThrowOn<Op::MoveConstruction>> &&
+      !w_has_policy_v<policy::Disable<Op::MoveConstruction>> &&
       detail::get_throwat_n_v<Op::MoveConstruction, Policies...> == 0 &&
-      std::is_nothrow_move_constructible_v<value_t> &&
-      std::is_nothrow_move_assignable_v<value_t>;
+      std::is_nothrow_move_constructible_v<value_t>;
 
     /**
-     * @brief Helper member to indicate if this widget can be copied
+     * @brief Helper member to indicate if this widget can be nothrow move assigned
      */
-    inline static constexpr bool can_copy =
+    inline static constexpr bool can_nothrow_move_assign =
+      !w_has_policy_v<policy::NoMove> &&
+      !w_has_policy_v<policy::ThrowOn<Op::MoveAssignment>> &&
+      !w_has_policy_v<policy::Disable<Op::MoveAssignment>> &&
+      detail::get_throwat_n_v<Op::MoveAssignment, Policies...> == 0 &&
+      std::is_nothrow_move_constructible_v<value_t>;
+
+    /**
+     * @brief Helper member to indicate if this widget can be copy constructed
+     */
+    inline static constexpr bool can_copy_construct =
       !w_has_policy_v<policy::NoCopy> &&
-      std::is_copy_constructible_v<value_t> &&
+      !w_has_policy_v<policy::Disable<Op::CopyConstruction>> &&
+      std::is_copy_constructible_v<value_t>;
+
+    /**
+     * @brief Helper member to indicate if this widget can be copy assigned
+     */
+    inline static constexpr bool can_copy_assign =
+      !w_has_policy_v<policy::NoCopy> &&
+      !w_has_policy_v<policy::Disable<Op::CopyAssignment>> &&
       std::is_copy_assignable_v<value_t>;
 
     /**
      * @brief Helper member to indicate if this widget can be default constructed
      */
     inline static constexpr bool can_default_construct =
-      !w_has_policy_v<policy::NoDefaultConstruct> &&
+      !w_has_policy_v<policy::Disable<Op::DefaultConstruction>> &&
       std::is_default_constructible_v<value_t>;
 
     /**
@@ -120,8 +145,8 @@ namespace uwidget {
      * Move construction is noexcept if the widget is not ThrowOnMove and value_t is nothrow move constructible.
      */
     Widget(Widget&& other)
-      noexcept(can_nothrow_move)
-      requires(can_move) :
+      noexcept(can_nothrow_move_construct)
+      requires(can_move_construct) :
       value{(throw_if_needed<Op::MoveConstruction>(), std::move(other.value))}
     {
       get_metric<Op::MoveConstruction>()++;
@@ -140,8 +165,8 @@ namespace uwidget {
      * Move assignment is noexcept if the widget is not ThrowOnMove and value_t is nothrow move assignable.
      */
     Widget& operator=(Widget&& other)
-      noexcept(can_nothrow_move)
-      requires(can_move) {
+      noexcept(can_nothrow_move_assign)
+      requires(can_move_assign) {
       throw_if_needed<Op::MoveAssignment>();
       get_metric<Op::MoveAssignment>()++;
       value = std::move(other.value);
@@ -158,7 +183,7 @@ namespace uwidget {
      * @brief Copy constructor. Copy constructs value and records this in the session.
      * ThrowOnCopy widgets will throw before constructor is entered, without session tracking.
      */
-    Widget(const Widget& other) requires(can_copy) :
+    Widget(const Widget& other) requires(can_copy_construct) :
       value{(throw_if_needed<Op::CopyConstruction>(), other.value)}
     {
       get_metric<Op::CopyConstruction>()++;
@@ -169,7 +194,7 @@ namespace uwidget {
      * @brief Copy assignment operator. Copy assigns value and records this in the session.
      * ThrowOnCopy widgets will throw before value is assigned, without session tracking.
      */
-    Widget& operator=(const Widget& other) requires(can_copy) {
+    Widget& operator=(const Widget& other) requires(can_copy_assign) {
       throw_if_needed<Op::CopyAssignment>();
       get_metric<Op::CopyAssignment>()++;
       value = other.value;
@@ -182,19 +207,13 @@ namespace uwidget {
     template <Op op>
     inline static void throw_if_needed() {
       using namespace policy;
-      if constexpr (w_has_policy_v<ThrowOnCopy> && (op == Op::CopyAssignment || op == Op::CopyConstruction)) {
-        throw WidgetException("uwidget: ThrowOnCopy");
-      }
-      else if constexpr (w_has_policy_v<ThrowOnMove> && (op == Op::MoveAssignment || op == Op::MoveConstruction)) {
-        throw WidgetException("uwidget: ThrowOnMove");
-      }
-      else if constexpr (w_has_policy_v<ThrowOnDefaultConstruction> && op == Op::DefaultConstruction) {
-        throw WidgetException("uwidget: ThowOnDefaultConstruction");
+      if constexpr (w_has_policy_v<policy::ThrowOn<op>>) {
+        throw WidgetException(std::format("uwidget: ThrowOn {}", op_message_v<op>).c_str());
       }
       else {
         constexpr size_t limit = detail::get_throwat_n_v<op, Policies...>;
         if constexpr (limit > 0) {
-          if (get_metric<op>() == limit - 1) throw WidgetException(std::format("uwidget: {}", op_message_v<op>).c_str());
+          if (get_metric<op>() == limit - 1) throw WidgetException(std::format("uwidget: {} {}s reached", limit, op_message_v<op>).c_str());
         }
       }
     }
