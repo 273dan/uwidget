@@ -4,7 +4,7 @@ if [[ $(basename $(pwd)) == "scripts" ]]; then
   exit
 fi
 
-TARGET_DIR="./single_header"
+TARGET_DIR="./single_header/uwidget"
 TARGET_NAME="uwidget.hpp"
 TARGET="$TARGET_DIR/$TARGET_NAME"
 INCLUDE_DIR="./include/uwidget"
@@ -38,7 +38,7 @@ append_header "$INCLUDE_DIR/widget_exception.hpp"
 append_header "$INCLUDE_DIR/detail.hpp"
 append_header "$INCLUDE_DIR/widget.hpp"
 
-
+echo "amalgamated header file generated at $TARGET"
 
 
 

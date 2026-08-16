@@ -1,4 +1,5 @@
 UW_INSTALL_PREFIX ?= /usr/local
+CTESTFLAGS = --output-on-failure
 
 .PHONY: all
 all:	build
@@ -13,7 +14,7 @@ build:	config
 
 .PHONY: test
 test:	build check-tests
-	cd build && ctest --output-on-failure
+	cd build && ctest ${CTESTFLAGS}
 
 .PHONY: clean
 clean:
@@ -34,3 +35,15 @@ check-tests:
 .PHONY: header
 header:
 	./scripts/amalgamate_header.sh
+
+.PHONY: test-single-header
+test-single-header:	build header
+	cmake -S . -B build_single_header -DUW_USE_SINGLE_HEADER=ON
+	cmake --build build_single_header
+	cd build_single_header && ctest $(CTESTFLAGS)
+
+.PHONY: test-all
+test-all: check-tests test test-single-header
+
+
+

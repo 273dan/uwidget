@@ -1,6 +1,6 @@
 #include <cassert>
 #include <unordered_set>
-#include "uwidget/widget.hpp"
+#include "uwidget/uwidget.hpp"
 using namespace uwidget;
 using namespace uwidget::policy;
 

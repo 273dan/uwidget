@@ -1,4 +1,3 @@
-#include "uwidget/policy.hpp"
 #include "uwidget/uwidget.hpp"
 #include <cassert>
 

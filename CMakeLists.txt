@@ -7,14 +7,23 @@ set(UW_LIB uwidget)
 set(UW_LIB_TARGETS uwidgetTargets)
 set(UW_LIB_CONFIG uwidgetConfig)
 
+option(UW_USE_SINGLE_HEADER "Use single header when installing and testing" OFF)
+
 add_library(${UW_LIB} INTERFACE)
 add_library(${UW_LIB}::${UW_LIB} ALIAS ${UW_LIB})
 
 target_compile_features(${UW_LIB} INTERFACE cxx_std_23)
-target_include_directories(${UW_LIB} INTERFACE
-  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-)
+if(${UW_USE_SINGLE_HEADER})
+  target_include_directories(${UW_LIB} INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/single_header>
+    $<INSTALL_INTERFACE:single_header>
+  )
+else()
+  target_include_directories(${UW_LIB} INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+  )
+endif()
 
 include(GNUInstallDirs)
 
