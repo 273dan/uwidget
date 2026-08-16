@@ -12,7 +12,7 @@ build:	config
 	cmake --build build
 
 .PHONY: test
-test:	build
+test:	build check-tests
 	cd build && ctest --output-on-failure
 
 .PHONY: clean
@@ -22,3 +22,11 @@ clean:
 .PHONY: install
 install:	build
 	cmake --install build --prefix $(UW_INSTALL_PREFIX)
+
+.PHONY: check-tests
+check-tests:
+	@if [[ -x "./scripts/check_tests.sh" ]]; then \
+		./scripts/check_tests.sh; \
+	else \
+		echo "./scripts/check_tests.sh is not executable"; \
+	fi \
