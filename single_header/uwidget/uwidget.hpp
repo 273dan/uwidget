@@ -1,4 +1,4 @@
-// uwidget.hpp -- generated 08/16/26 17:11:38
+// uwidget.hpp -- generated 08/16/26 17:32:50
 #pragma once
 
 #include <array>
@@ -95,6 +95,7 @@ class WidgetException : public std::runtime_error {
 
 
 namespace uwidget::detail {
+
 
   template<typename Target, typename ...Policies>
   inline constexpr bool has_policy_v =
