@@ -6,7 +6,7 @@ It provides the `Widget` class along with several Policy structs to inject diffe
 
 # Getting Started
 To use **uwidget**, either:
-- Copy the contents `include/uwidget` directory into your project (to, for example `third_party/uwidget`)
+- Include `single_header/uwidget.hpp`
 - Install the headers with `sudo make install` (or set `UW_INSTALL_PREFIX` to install to a custom location) and use `find_package(uwidget)`
 
 # Upcoming Features
@@ -16,6 +16,6 @@ To use **uwidget**, either:
 
 **Misc**
 - [ ] A proper README
-- [ ] Single-header amalgamation
+- [x] Single-header amalgamation
 - [ ] Included examples using `uwidget` to test behaviours of STL containers
 

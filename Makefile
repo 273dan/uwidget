@@ -30,3 +30,7 @@ check-tests:
 	else \
 		echo "./scripts/check_tests.sh is not executable"; \
 	fi \
+
+.PHONY: header
+header:
+	./scripts/amalgamate_header.sh
