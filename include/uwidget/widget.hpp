@@ -1,6 +1,7 @@
 #pragma once
 
 #include <concepts>
+#include <format>
 #include <type_traits>
 #include <compare>
 #include <array>
@@ -84,9 +85,7 @@ namespace uwidget {
      * ThrowOnDefaultConstruction widgets will throw without session tracking.
      */
     Widget() requires(can_default_construct) {
-      if (should_throw<Op::DefaultConstruction>()) {
-        throw WidgetException("uwidget: ThrowOnDefaultconstruction");
-      }
+      throw_if_needed<Op::DefaultConstruction>();
       get_metric<Op::DefaultConstruction>()++;
       get_metric<Op::ActiveInstance>()++;
     }
@@ -123,8 +122,7 @@ namespace uwidget {
     Widget(Widget&& other)
       noexcept(can_nothrow_move)
       requires(can_move) :
-      value{should_throw<Op::MoveConstruction>() ? throw WidgetException("uwidget: ThrowOnMove")
-                                                 : std::move(other.value)}
+      value{(throw_if_needed<Op::MoveConstruction>(), std::move(other.value))}
     {
       get_metric<Op::MoveConstruction>()++;
       get_metric<Op::ActiveInstance>()++;
@@ -144,9 +142,7 @@ namespace uwidget {
     Widget& operator=(Widget&& other)
       noexcept(can_nothrow_move)
       requires(can_move) {
-      if (should_throw<Op::MoveAssignment>()) {
-        throw WidgetException("uwidget: ThrowOnMove");
-      }
+      throw_if_needed<Op::MoveAssignment>();
       get_metric<Op::MoveAssignment>()++;
       value = std::move(other.value);
       return *this;
@@ -163,8 +159,7 @@ namespace uwidget {
      * ThrowOnCopy widgets will throw before constructor is entered, without session tracking.
      */
     Widget(const Widget& other) requires(can_copy) :
-      value{should_throw<Op::CopyConstruction>() ? throw WidgetException("uwidget: ThrowOnCopy")
-                                                 : other.value}
+      value{(throw_if_needed<Op::CopyConstruction>(), other.value)}
     {
       get_metric<Op::CopyConstruction>()++;
       get_metric<Op::ActiveInstance>()++;
@@ -175,9 +170,7 @@ namespace uwidget {
      * ThrowOnCopy widgets will throw before value is assigned, without session tracking.
      */
     Widget& operator=(const Widget& other) requires(can_copy) {
-      if (should_throw<Op::CopyAssignment>()) {
-        throw WidgetException("uwidget: ThrowOnCopy");
-      }
+      throw_if_needed<Op::CopyAssignment>();
       get_metric<Op::CopyAssignment>()++;
       value = other.value;
       return *this;
@@ -187,24 +180,23 @@ namespace uwidget {
     inline static thread_local std::array<size_t, static_cast<uint8_t>(Op::_COUNT)> metrics_{};
     
     template <Op op>
-    inline static bool should_throw() {
+    inline static void throw_if_needed() {
       using namespace policy;
       if constexpr (w_has_policy_v<ThrowOnCopy> && (op == Op::CopyAssignment || op == Op::CopyConstruction)) {
-        return true;
+        throw WidgetException("uwidget: ThrowOnCopy");
       }
       else if constexpr (w_has_policy_v<ThrowOnMove> && (op == Op::MoveAssignment || op == Op::MoveConstruction)) {
-        return true;
+        throw WidgetException("uwidget: ThrowOnMove");
       }
       else if constexpr (w_has_policy_v<ThrowOnDefaultConstruction> && op == Op::DefaultConstruction) {
-        return true;
+        throw WidgetException("uwidget: ThowOnDefaultConstruction");
       }
       else {
         constexpr size_t limit = detail::get_throwat_n_v<op, Policies...>;
         if constexpr (limit > 0) {
-          if (get_metric<op>() == limit - 1) return true;
+          if (get_metric<op>() == limit - 1) throw WidgetException(std::format("uwidget: {}", op_message_v<op>).c_str());
         }
       }
-      return false;
     }
 
 
