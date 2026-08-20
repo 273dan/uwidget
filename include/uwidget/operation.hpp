@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string_view>
+#include <tuple>
 
 namespace uwidget {
 
@@ -53,7 +54,5 @@ template <>
 inline constexpr std::string_view op_message_v<Op::ValueConstruction> =
   "Value Construction";
 
-
 }
-
 
