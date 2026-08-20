@@ -1,4 +1,4 @@
-// uwidget.hpp -- generated 08/16/26 18:33:33
+// uwidget.hpp -- generated 08/20/26 17:16:44
 #pragma once
 
 #include <array>
@@ -9,6 +9,7 @@
 #include <format>
 #include <stdexcept>
 #include <string_view>
+#include <tuple>
 #include <type_traits>
 // begin operation.hpp -----------------
 
@@ -132,6 +133,55 @@ class WidgetException : public std::runtime_error {
 
 namespace uwidget::detail {
 
+
+// policy expansion -----
+
+
+  /**
+   * @brief Default expanded policy wraps single policy in tuple
+   */
+  template <typename Policy>
+  struct expand_policy {
+    using type = std::tuple<Policy>;
+  };
+
+  /**
+   * @brief Type template for expand_policy
+   */
+  template <typename Policy>
+  using expand_policy_t = typename expand_policy<Policy>::type;
+
+  /**
+   * @brief Defines the type of the collection of policies after expansion
+   */
+  template <typename ...Policies>
+    using expanded_policy_tuple_t = decltype(std::tuple_cat(expand_policy_t<Policies>{}...));
+
+  /**
+   * @brief NoCopy expands into Disable copy construction and assignment
+   */
+  template <>
+  struct expand_policy<policy::NoCopy> {
+    using type = std::tuple<
+      policy::Disable<Op::CopyConstruction>,
+      policy::Disable<Op::CopyAssignment>
+    >;
+  };
+
+  /**
+   * @brief NoMove expands into Disable move construction and assignment
+   */
+  template <>
+  struct expand_policy<policy::NoMove> {
+    using type = std::tuple<
+      policy::Disable<Op::MoveConstruction>,
+      policy::Disable<Op::MoveAssignment>
+    >;
+  };
+
+// -----
+
+// policy filtering and matching -----
   template<typename Target, typename ...Policies>
   inline constexpr bool has_policy_v =
     (std::is_same_v<Target, Policies> || ...);
@@ -184,7 +234,73 @@ namespace uwidget::detail {
 
   template <Op OpV, typename ...Policies>
   inline constexpr size_t get_throwat_n_v = get_throwat_n<OpV, Policies...>::n;
-  
+// -----
+
+// widget traits -----
+  template <typename Tuple>
+  struct widget_traits_impl;
+
+  template <typename ...ExpandedPolicies>
+  struct widget_traits_impl<std::tuple<ExpandedPolicies...>> {
+    using value_t = get_value_type_t<int, ExpandedPolicies...>;
+
+    /**
+     * @brief Indicates if this widget can be move constructed
+     */
+    inline static constexpr bool can_move_construct =
+      !has_policy_v<policy::Disable<Op::MoveConstruction>, ExpandedPolicies...> &&
+      std::is_move_constructible_v<value_t>;
+
+    /**
+     * @brief Indicates if this widget can be move assigned
+     */
+    inline static constexpr bool can_move_assign =
+      !has_policy_v<policy::Disable<Op::MoveAssignment>, ExpandedPolicies...> &&
+      std::is_move_assignable_v<value_t>;
+
+    /**
+     * @brief Indicates if this widget can be nothrow move constructed
+     */
+    inline static constexpr bool can_nothrow_move_construct =
+      can_move_construct &&
+      !has_policy_v<policy::ThrowOn<Op::MoveConstruction>, ExpandedPolicies...> &&
+      get_throwat_n_v<Op::MoveConstruction, ExpandedPolicies...> == 0 &&
+      std::is_nothrow_move_constructible_v<value_t>;
+
+    /**
+     * @brief Indicates if this widget can be nothrow move assigned
+     */
+    inline static constexpr bool can_nothrow_move_assign =
+      can_move_assign &&
+      !has_policy_v<policy::ThrowOn<Op::MoveAssignment>, ExpandedPolicies...> &&
+      get_throwat_n_v<Op::MoveAssignment, ExpandedPolicies...> == 0 &&
+      std::is_nothrow_move_assignable_v<value_t>;
+
+    /**
+     * @brief Indicates if this widget can be copy constructed
+     */
+    inline static constexpr bool can_copy_construct =
+      !has_policy_v<policy::Disable<Op::CopyConstruction>, ExpandedPolicies...> &&
+      std::is_copy_constructible_v<value_t>;
+
+    /**
+     * @brief Indicates if this widget can be copy assigned
+     */
+    inline static constexpr bool can_copy_assign =
+      !has_policy_v<policy::Disable<Op::CopyAssignment>, ExpandedPolicies...> &&
+      std::is_copy_assignable_v<value_t>;
+
+    /**
+     * @brief Indicates if this widget can be default constructed
+     */
+    inline static constexpr bool can_default_construct =
+      !has_policy_v<policy::Disable<Op::DefaultConstruction>, ExpandedPolicies...> &&
+      std::is_default_constructible_v<value_t>;
+  };
+
+  template <typename ...Policies>
+  using widget_traits = widget_traits_impl<expanded_policy_tuple_t<Policies...>>;
+// -----
 
 
 
@@ -222,64 +338,9 @@ namespace uwidget {
     static_assert((detail::is_policy_v<Policies> && ...), "all types in Policies must inherit from policy_base");
     static_assert(!detail::contains_multiple_value_policies_v<Policies...>, "Widget must contain at most 1 Value policy");
 
-    /**
-     * @brief Helper member to indicate if this widget can be move constructed
-     */
-    inline static constexpr bool can_move_construct =
-      !w_has_policy_v<policy::NoMove> &&
-      !w_has_policy_v<policy::Disable<Op::MoveConstruction>> &&
-      std::is_move_constructible_v<value_t>;
+    using traits = detail::widget_traits<Policies...>;
 
-    /**
-     * @brief Helper member to indicate if this widget can be move assigned
-     */
-    inline static constexpr bool can_move_assign =
-      !w_has_policy_v<policy::NoMove> &&
-      !w_has_policy_v<policy::Disable<Op::MoveAssignment>> &&
-      std::is_move_assignable_v<value_t>;
 
-    /**
-     * @brief Helper member to indicate if this widget can be nothrow move constructed
-     */
-    inline static constexpr bool can_nothrow_move_construct =
-      !w_has_policy_v<policy::NoMove> &&
-      !w_has_policy_v<policy::ThrowOn<Op::MoveConstruction>> &&
-      !w_has_policy_v<policy::Disable<Op::MoveConstruction>> &&
-      detail::get_throwat_n_v<Op::MoveConstruction, Policies...> == 0 &&
-      std::is_nothrow_move_constructible_v<value_t>;
-
-    /**
-     * @brief Helper member to indicate if this widget can be nothrow move assigned
-     */
-    inline static constexpr bool can_nothrow_move_assign =
-      !w_has_policy_v<policy::NoMove> &&
-      !w_has_policy_v<policy::ThrowOn<Op::MoveAssignment>> &&
-      !w_has_policy_v<policy::Disable<Op::MoveAssignment>> &&
-      detail::get_throwat_n_v<Op::MoveAssignment, Policies...> == 0 &&
-      std::is_nothrow_move_constructible_v<value_t>;
-
-    /**
-     * @brief Helper member to indicate if this widget can be copy constructed
-     */
-    inline static constexpr bool can_copy_construct =
-      !w_has_policy_v<policy::NoCopy> &&
-      !w_has_policy_v<policy::Disable<Op::CopyConstruction>> &&
-      std::is_copy_constructible_v<value_t>;
-
-    /**
-     * @brief Helper member to indicate if this widget can be copy assigned
-     */
-    inline static constexpr bool can_copy_assign =
-      !w_has_policy_v<policy::NoCopy> &&
-      !w_has_policy_v<policy::Disable<Op::CopyAssignment>> &&
-      std::is_copy_assignable_v<value_t>;
-
-    /**
-     * @brief Helper member to indicate if this widget can be default constructed
-     */
-    inline static constexpr bool can_default_construct =
-      !w_has_policy_v<policy::Disable<Op::DefaultConstruction>> &&
-      std::is_default_constructible_v<value_t>;
 
     /**
      * @brief Reset all tracked metric counters to 0 for this Widget type.
@@ -292,7 +353,7 @@ namespace uwidget {
      * @brief Default constructor. Default constructs value and records this in the session.
      * ThrowOnDefaultConstruction widgets will throw without session tracking.
      */
-    Widget() requires(can_default_construct) {
+    Widget() requires(traits::can_default_construct) {
       throw_if_needed<Op::DefaultConstruction>();
       get_metric<Op::DefaultConstruction>()++;
       get_metric<Op::ActiveInstance>()++;
@@ -328,8 +389,8 @@ namespace uwidget {
      * Move construction is noexcept if the widget is not ThrowOnMove and value_t is nothrow move constructible.
      */
     Widget(Widget&& other)
-      noexcept(can_nothrow_move_construct)
-      requires(can_move_construct) :
+      noexcept(traits::can_nothrow_move_construct)
+      requires(traits::can_move_construct && !w_has_policy_v<policy::NoMove>) :
       value{(throw_if_needed<Op::MoveConstruction>(), std::move(other.value))}
     {
       get_metric<Op::MoveConstruction>()++;
@@ -348,8 +409,8 @@ namespace uwidget {
      * Move assignment is noexcept if the widget is not ThrowOnMove and value_t is nothrow move assignable.
      */
     Widget& operator=(Widget&& other)
-      noexcept(can_nothrow_move_assign)
-      requires(can_move_assign) {
+      noexcept(traits::can_nothrow_move_assign)
+      requires(traits::can_move_assign && !w_has_policy_v<policy::NoMove>) {
       throw_if_needed<Op::MoveAssignment>();
       get_metric<Op::MoveAssignment>()++;
       value = std::move(other.value);
@@ -366,7 +427,7 @@ namespace uwidget {
      * @brief Copy constructor. Copy constructs value and records this in the session.
      * ThrowOnCopy widgets will throw before constructor is entered, without session tracking.
      */
-    Widget(const Widget& other) requires(can_copy_construct) :
+    Widget(const Widget& other) requires(traits::can_copy_construct) :
       value{(throw_if_needed<Op::CopyConstruction>(), other.value)}
     {
       get_metric<Op::CopyConstruction>()++;
@@ -377,7 +438,7 @@ namespace uwidget {
      * @brief Copy assignment operator. Copy assigns value and records this in the session.
      * ThrowOnCopy widgets will throw before value is assigned, without session tracking.
      */
-    Widget& operator=(const Widget& other) requires(can_copy_assign) {
+    Widget& operator=(const Widget& other) requires(traits::can_copy_assign) {
       throw_if_needed<Op::CopyAssignment>();
       get_metric<Op::CopyAssignment>()++;
       value = other.value;
