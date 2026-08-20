@@ -1,4 +1,4 @@
-// uwidget.hpp -- generated 08/20/26 18:05:05
+// uwidget.hpp -- generated 08/20/26 18:31:58
 #pragma once
 
 #include <array>
@@ -254,6 +254,11 @@ namespace uwidget::detail {
   template <typename Default, typename T, typename ...Other>
   struct get_value_type<Default, policy::Value<T>, Other...> {
     using type = T;
+  };
+
+  template <typename Default, typename First, typename ...Other>
+  struct get_value_type<Default, First, Other...> {
+    using type = typename get_value_type<Default, Other...>::type;
   };
 
   template <typename Default, typename ...Other>

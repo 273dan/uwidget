@@ -32,3 +32,12 @@ static_assert(std::is_move_constructible_v<FloatNoCopy_w>, "FloatNoCopyWidget sh
 static_assert(!std::is_copy_assignable_v<FloatNoCopy_w>, "FloatNoCopyWidget should not be copy assignable");
 static_assert(std::is_move_assignable_v<FloatNoCopy_w>, "FloatNoCopyWidget should be move assignable");
 FloatNoCopy_w fncw{42.0f};
+
+// with policies other order
+using FloatNoCopy2_w = Widget<NoCopy, Value<float>>;
+static_assert(std::is_same_v<FloatNoCopy2_w::value_t, float>, "FloatNoCopy2Widget value should be float");
+static_assert(!std::is_copy_constructible_v<FloatNoCopy2_w>, "FloatNoCopy2Widget should not be copy constructible");
+static_assert(std::is_move_constructible_v<FloatNoCopy2_w>, "FloatNoCopy2Widget should be move constructible");
+static_assert(!std::is_copy_assignable_v<FloatNoCopy2_w>, "FloatNoCopy2Widget should not be copy assignable");
+static_assert(std::is_move_assignable_v<FloatNoCopy2_w>, "FloatNoCopy2Widget should be move assignable");
+FloatNoCopy2_w fncw2{42.0f};

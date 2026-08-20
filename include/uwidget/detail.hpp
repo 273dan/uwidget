@@ -123,6 +123,11 @@ namespace uwidget::detail {
     using type = T;
   };
 
+  template <typename Default, typename First, typename ...Other>
+  struct get_value_type<Default, First, Other...> {
+    using type = typename get_value_type<Default, Other...>::type;
+  };
+
   template <typename Default, typename ...Other>
   using get_value_type_t = typename get_value_type<Default, Other...>::type;
 
