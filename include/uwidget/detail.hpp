@@ -54,11 +54,59 @@ namespace uwidget::detail {
   };
 
 // -----
+  
+  
+  
+  
+
+// type traits helpers -----
+
+  template <Op op, typename T>
+  struct get_type_trait_t {};
+
+  template <typename T>
+  struct get_type_trait_t<Op::CopyConstruction, T> {
+    constexpr static bool has_ability = std::is_copy_constructible_v<T>;
+    constexpr static bool has_nothrow_ability = std::is_nothrow_copy_constructible_v<T>;
+  };
+
+  template <typename T>
+  struct get_type_trait_t<Op::CopyAssignment, T> {
+    constexpr static bool has_ability = std::is_copy_assignable_v<T>;
+    constexpr static bool has_nothrow_ability = std::is_nothrow_copy_assignable_v<T>;
+  };
+
+  template <typename T>
+  struct get_type_trait_t<Op::MoveConstruction, T> {
+    constexpr static bool has_ability = std::is_move_constructible_v<T>;
+    constexpr static bool has_nothrow_ability = std::is_nothrow_move_constructible_v<T>;
+  };
+
+  template <typename T>
+  struct get_type_trait_t<Op::MoveAssignment, T> {
+    constexpr static bool has_ability = std::is_move_assignable_v<T>;
+    constexpr static bool has_nothrow_ability = std::is_nothrow_move_assignable_v<T>;
+  };
+
+  template <typename T>
+  struct get_type_trait_t<Op::DefaultConstruction, T> {
+    constexpr static bool has_ability = std::is_default_constructible_v<T>;
+    constexpr static bool has_nothrow_ability = std::is_nothrow_default_constructible_v<T>;
+  };
+
+  template <Op op, typename T>
+  constexpr static bool has_ability_v = get_type_trait_t<op, T>::has_ability;
+
+  template <Op op, typename T>
+  constexpr static bool has_nothrow_ability_v = get_type_trait_t<op, T>::has_nothrow_ability;
+
+  
+
+
+
+// -----
 
 // policy filtering and matching -----
-  template<typename Target, typename ...Policies>
-  inline constexpr bool has_policy_v =
-    (std::is_same_v<Target, Policies> || ...);
 
   template<typename Target>
   inline constexpr bool is_policy_v =
@@ -111,65 +159,33 @@ namespace uwidget::detail {
 // -----
 
 // widget traits -----
+
   template <typename Tuple>
   struct widget_traits_impl;
 
   template <typename ...ExpandedPolicies>
   struct widget_traits_impl<std::tuple<ExpandedPolicies...>> {
+
     using value_t = get_value_type_t<int, ExpandedPolicies...>;
 
-    /**
-     * @brief Indicates if this widget can be move constructed
-     */
-    inline static constexpr bool can_move_construct =
-      !has_policy_v<policy::Disable<Op::MoveConstruction>, ExpandedPolicies...> &&
-      std::is_move_constructible_v<value_t>;
+    template <typename Target>
+    inline static constexpr bool has_policy_v = (std::is_same_v<Target, ExpandedPolicies> || ...);
 
-    /**
-     * @brief Indicates if this widget can be move assigned
-     */
-    inline static constexpr bool can_move_assign =
-      !has_policy_v<policy::Disable<Op::MoveAssignment>, ExpandedPolicies...> &&
-      std::is_move_assignable_v<value_t>;
+    template <Op op>
+    inline static constexpr bool can_op_v =
+      !has_policy_v<policy::Disable<op>> &&
+      has_ability_v<op, value_t>;
 
-    /**
-     * @brief Indicates if this widget can be nothrow move constructed
-     */
-    inline static constexpr bool can_nothrow_move_construct =
-      can_move_construct &&
-      !has_policy_v<policy::ThrowOn<Op::MoveConstruction>, ExpandedPolicies...> &&
-      get_throwat_n_v<Op::MoveConstruction, ExpandedPolicies...> == 0 &&
-      std::is_nothrow_move_constructible_v<value_t>;
+    template <Op op>
+    inline static constexpr bool can_nothrow_op_v =
+         !has_policy_v<policy::ForceNonNoexcept<op>>
+      && !has_policy_v<policy::Disable<op>>
+      && !has_policy_v<policy::ThrowOn<op>>
+      && has_ability_v<op, value_t> 
+      && has_nothrow_ability_v<op, value_t>
+      && get_throwat_n_v<op, ExpandedPolicies...> == 0;
 
-    /**
-     * @brief Indicates if this widget can be nothrow move assigned
-     */
-    inline static constexpr bool can_nothrow_move_assign =
-      can_move_assign &&
-      !has_policy_v<policy::ThrowOn<Op::MoveAssignment>, ExpandedPolicies...> &&
-      get_throwat_n_v<Op::MoveAssignment, ExpandedPolicies...> == 0 &&
-      std::is_nothrow_move_assignable_v<value_t>;
 
-    /**
-     * @brief Indicates if this widget can be copy constructed
-     */
-    inline static constexpr bool can_copy_construct =
-      !has_policy_v<policy::Disable<Op::CopyConstruction>, ExpandedPolicies...> &&
-      std::is_copy_constructible_v<value_t>;
-
-    /**
-     * @brief Indicates if this widget can be copy assigned
-     */
-    inline static constexpr bool can_copy_assign =
-      !has_policy_v<policy::Disable<Op::CopyAssignment>, ExpandedPolicies...> &&
-      std::is_copy_assignable_v<value_t>;
-
-    /**
-     * @brief Indicates if this widget can be default constructed
-     */
-    inline static constexpr bool can_default_construct =
-      !has_policy_v<policy::Disable<Op::DefaultConstruction>, ExpandedPolicies...> &&
-      std::is_default_constructible_v<value_t>;
   };
 
   template <typename ...Policies>

@@ -46,4 +46,11 @@ namespace uwidget::policy {
   template <Op op, size_t N>
   struct ThrowOnNthOperation : policy_base{};
 
+
+  /**
+   * @brief Forces the specified operation to be non-noexcept
+   */
+  template <Op op>
+  struct ForceNonNoexcept : policy_base{};
+
 }

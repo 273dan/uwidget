@@ -29,8 +29,6 @@ namespace uwidget {
     static size_t default_constructions() { return get_metric<Op::DefaultConstruction>(); }
     static size_t value_constructions() { return get_metric<Op::ValueConstruction>(); }
 
-    template <typename TargetT>
-    inline static constexpr bool w_has_policy_v = detail::has_policy_v<TargetT, Policies...>;
 
     using value_t = detail::get_value_type_t<int, Policies...>;
     value_t value;
@@ -39,6 +37,9 @@ namespace uwidget {
     static_assert(!detail::contains_multiple_value_policies_v<Policies...>, "Widget must contain at most 1 Value policy");
 
     using traits = detail::widget_traits<Policies...>;
+
+    template <typename TargetT>
+    inline static constexpr bool w_has_policy_v = traits::template has_policy_v<TargetT>;
 
 
 
@@ -53,7 +54,7 @@ namespace uwidget {
      * @brief Default constructor. Default constructs value and records this in the session.
      * ThrowOnDefaultConstruction widgets will throw without session tracking.
      */
-    Widget() requires(traits::can_default_construct) {
+    Widget() requires(traits::template can_op_v<Op::DefaultConstruction>) {
       throw_if_needed<Op::DefaultConstruction>();
       get_metric<Op::DefaultConstruction>()++;
       get_metric<Op::ActiveInstance>()++;
@@ -89,8 +90,8 @@ namespace uwidget {
      * Move construction is noexcept if the widget is not ThrowOnMove and value_t is nothrow move constructible.
      */
     Widget(Widget&& other)
-      noexcept(traits::can_nothrow_move_construct)
-      requires(traits::can_move_construct && !w_has_policy_v<policy::NoMove>) :
+      noexcept(traits::template can_nothrow_op_v<Op::MoveConstruction>) 
+      requires(traits::template can_op_v<Op::MoveConstruction>) :
       value{(throw_if_needed<Op::MoveConstruction>(), std::move(other.value))}
     {
       get_metric<Op::MoveConstruction>()++;
@@ -109,8 +110,8 @@ namespace uwidget {
      * Move assignment is noexcept if the widget is not ThrowOnMove and value_t is nothrow move assignable.
      */
     Widget& operator=(Widget&& other)
-      noexcept(traits::can_nothrow_move_assign)
-      requires(traits::can_move_assign && !w_has_policy_v<policy::NoMove>) {
+      noexcept(traits::template can_nothrow_op_v<Op::MoveAssignment>)
+      requires(traits::template can_op_v<Op::MoveConstruction>) {
       throw_if_needed<Op::MoveAssignment>();
       get_metric<Op::MoveAssignment>()++;
       value = std::move(other.value);
@@ -127,7 +128,7 @@ namespace uwidget {
      * @brief Copy constructor. Copy constructs value and records this in the session.
      * ThrowOnCopy widgets will throw before constructor is entered, without session tracking.
      */
-    Widget(const Widget& other) requires(traits::can_copy_construct) :
+    Widget(const Widget& other) requires(traits::template can_op_v<Op::CopyConstruction>) :
       value{(throw_if_needed<Op::CopyConstruction>(), other.value)}
     {
       get_metric<Op::CopyConstruction>()++;
@@ -138,7 +139,7 @@ namespace uwidget {
      * @brief Copy assignment operator. Copy assigns value and records this in the session.
      * ThrowOnCopy widgets will throw before value is assigned, without session tracking.
      */
-    Widget& operator=(const Widget& other) requires(traits::can_copy_assign) {
+    Widget& operator=(const Widget& other) requires(traits::template can_op_v<Op::CopyAssignment>) {
       throw_if_needed<Op::CopyAssignment>();
       get_metric<Op::CopyAssignment>()++;
       value = other.value;
