@@ -1,7 +1,8 @@
-// uwidget.hpp -- generated 09/26/26 15:39:00
+// uwidget.hpp -- generated 09/26/26 20:23:21
 #pragma once
 
 #include <array>
+#include <atomic>
 #include <compare>
 #include <concepts>
 #include <cstddef>
@@ -379,7 +380,10 @@ namespace uwidget {
      * @brief Reset all tracked metric counters to 0 for this Widget type.
      */
     static void reset_metrics() {
-      metrics_.fill(0);
+      for(auto& i : metrics_) {
+        i.store(0);
+
+      }
     }
 
     /**
@@ -479,10 +483,10 @@ namespace uwidget {
     }
 
   private:
-    inline static thread_local std::array<size_t, static_cast<uint8_t>(Op::_COUNT)> metrics_{};
+    inline static std::array<std::atomic<size_t>, static_cast<uint8_t>(Op::_COUNT)> metrics_{};
     
     template <Op op>
-    static size_t& get_metric_mut() {
+    static std::atomic<size_t>& get_metric_mut() {
       return metrics_[static_cast<uint8_t>(op)];
     }
 

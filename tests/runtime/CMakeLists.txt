@@ -30,3 +30,5 @@ uw_add_runtime_test(test_comparators PASS)
 uw_add_runtime_test(test_hash PASS)
 uw_add_runtime_test(test_throw_on_nth_operation PASS)
 uw_add_runtime_test(test_id PASS)
+
+uw_add_runtime_test(test_multithread PASS)
