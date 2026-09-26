@@ -56,7 +56,7 @@ namespace uwidget::policy {
   /**
    * @brief Dummy policy only used to differentiate otherwise identical Widgets in the same scope
    */
-  template <int n = 0>
-  struct Id : policy_base{};
+  template <auto n = []{}>
+  struct Unique : policy_base{};
 
 }

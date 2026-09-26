@@ -1,4 +1,4 @@
-// uwidget.hpp -- generated 09/26/26 20:23:21
+// uwidget.hpp -- generated 09/26/26 21:10:58
 #pragma once
 
 #include <array>
@@ -124,8 +124,8 @@ namespace uwidget::policy {
   /**
    * @brief Dummy policy only used to differentiate otherwise identical Widgets in the same scope
    */
-  template <int n = 0>
-  struct Id : policy_base{};
+  template <auto n = []{}>
+  struct Unique : policy_base{};
 
 }
 // end policy.hpp -----------------
