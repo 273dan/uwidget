@@ -1,4 +1,4 @@
-// uwidget.hpp -- generated 08/20/26 18:31:58
+// uwidget.hpp -- generated 09/26/26 15:39:00
 #pragma once
 
 #include <array>
@@ -64,9 +64,7 @@ template <>
 inline constexpr std::string_view op_message_v<Op::ValueConstruction> =
   "Value Construction";
 
-
 }
-
 
 // end operation.hpp -----------------
 // begin policy.hpp -----------------
@@ -121,6 +119,12 @@ namespace uwidget::policy {
    */
   template <Op op>
   struct ForceNonNoexcept : policy_base{};
+
+  /**
+   * @brief Dummy policy only used to differentiate otherwise identical Widgets in the same scope
+   */
+  template <int n = 0>
+  struct Id : policy_base{};
 
 }
 // end policy.hpp -----------------
@@ -344,7 +348,7 @@ namespace uwidget {
   public:
 
     template <Op op>
-    static size_t& get_metric() {
+    static size_t get_metric() {
       return metrics_[static_cast<uint8_t>(op)];
     }
 
@@ -384,32 +388,32 @@ namespace uwidget {
      */
     Widget() requires(traits::template can_op_v<Op::DefaultConstruction>) {
       throw_if_needed<Op::DefaultConstruction>();
-      get_metric<Op::DefaultConstruction>()++;
-      get_metric<Op::ActiveInstance>()++;
+      get_metric_mut<Op::DefaultConstruction>()++;
+      get_metric_mut<Op::ActiveInstance>()++;
     }
 
     /**
      * @brief lvalue Value construction. Copy constructs value and records this in the session.
      */
     explicit Widget(const value_t& x) : value{x} {
-      get_metric<Op::ValueConstruction>()++;
-      get_metric<Op::ActiveInstance>()++;
+      get_metric_mut<Op::ValueConstruction>()++;
+      get_metric_mut<Op::ActiveInstance>()++;
     }
 
     /**
      * @brief rvalue Value construction. Move constructs value and records this in the session.
      */
     explicit Widget(value_t&& x) : value{std::move(x)} {
-      get_metric<Op::ValueConstruction>()++;
-      get_metric<Op::ActiveInstance>()++;
+      get_metric_mut<Op::ValueConstruction>()++;
+      get_metric_mut<Op::ActiveInstance>()++;
     }
 
     /**
      * @brief Destructor. Records this in the session.
      */
     ~Widget() {
-      get_metric<Op::Destruction>()++;
-      get_metric<Op::ActiveInstance>()--;
+      get_metric_mut<Op::Destruction>()++;
+      get_metric_mut<Op::ActiveInstance>()--;
     }
 
     /**
@@ -422,8 +426,8 @@ namespace uwidget {
       requires(traits::template can_op_v<Op::MoveConstruction>) :
       value{(throw_if_needed<Op::MoveConstruction>(), std::move(other.value))}
     {
-      get_metric<Op::MoveConstruction>()++;
-      get_metric<Op::ActiveInstance>()++;
+      get_metric_mut<Op::MoveConstruction>()++;
+      get_metric_mut<Op::ActiveInstance>()++;
     }
 
     /**
@@ -441,7 +445,7 @@ namespace uwidget {
       noexcept(traits::template can_nothrow_op_v<Op::MoveAssignment>)
       requires(traits::template can_op_v<Op::MoveConstruction>) {
       throw_if_needed<Op::MoveAssignment>();
-      get_metric<Op::MoveAssignment>()++;
+      get_metric_mut<Op::MoveAssignment>()++;
       value = std::move(other.value);
       return *this;
     }
@@ -459,8 +463,8 @@ namespace uwidget {
     Widget(const Widget& other) requires(traits::template can_op_v<Op::CopyConstruction>) :
       value{(throw_if_needed<Op::CopyConstruction>(), other.value)}
     {
-      get_metric<Op::CopyConstruction>()++;
-      get_metric<Op::ActiveInstance>()++;
+      get_metric_mut<Op::CopyConstruction>()++;
+      get_metric_mut<Op::ActiveInstance>()++;
     }
 
     /**
@@ -469,7 +473,7 @@ namespace uwidget {
      */
     Widget& operator=(const Widget& other) requires(traits::template can_op_v<Op::CopyAssignment>) {
       throw_if_needed<Op::CopyAssignment>();
-      get_metric<Op::CopyAssignment>()++;
+      get_metric_mut<Op::CopyAssignment>()++;
       value = other.value;
       return *this;
     }
@@ -477,6 +481,11 @@ namespace uwidget {
   private:
     inline static thread_local std::array<size_t, static_cast<uint8_t>(Op::_COUNT)> metrics_{};
     
+    template <Op op>
+    static size_t& get_metric_mut() {
+      return metrics_[static_cast<uint8_t>(op)];
+    }
+
     template <Op op>
     inline static void throw_if_needed() {
       using namespace policy;
