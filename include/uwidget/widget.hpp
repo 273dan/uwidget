@@ -115,7 +115,7 @@ namespace uwidget {
      */
     Widget& operator=(Widget&& other)
       noexcept(traits::template can_nothrow_op_v<Op::MoveAssignment>)
-      requires(traits::template can_op_v<Op::MoveConstruction>) {
+      requires(traits::template can_op_v<Op::MoveAssignment>) {
       throw_if_needed<Op::MoveAssignment>();
       get_metric_mut<Op::MoveAssignment>()++;
       value = std::move(other.value);
