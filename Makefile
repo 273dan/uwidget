@@ -1,5 +1,5 @@
 UW_INSTALL_PREFIX ?= /usr/local
-CTESTFLAGS = --output-on-failure
+UW_DOCTESTFLAGS ?=
 
 .PHONY: all
 all:	build
@@ -13,8 +13,8 @@ build:	config
 	cmake --build build
 
 .PHONY: test
-test:	build check-tests
-	cd build && ctest ${CTESTFLAGS}
+test:	build
+	./build/tests/uw_tests $(UW_DOCTESTFLAGS)
 
 .PHONY: clean
 clean:
@@ -24,13 +24,6 @@ clean:
 install:	build
 	cmake --install build --prefix $(UW_INSTALL_PREFIX)
 
-.PHONY: check-tests
-check-tests:
-	@if [[ -x "./scripts/check_tests.sh" ]]; then \
-		./scripts/check_tests.sh; \
-	else \
-		echo "./scripts/check_tests.sh is not executable"; \
-	fi \
 
 .PHONY: header
 header:
@@ -40,10 +33,10 @@ header:
 test-single-header:	build header
 	cmake -S . -B build_single_header -DUW_USE_SINGLE_HEADER=ON
 	cmake --build build_single_header
-	cd build_single_header && ctest $(CTESTFLAGS)
+	./build_single_header/tests/uw_tests $(UW_DOCTESTFLAGS)
 
 .PHONY: test-all
-test-all: check-tests test test-single-header
+test-all: test test-single-header
 
 
 

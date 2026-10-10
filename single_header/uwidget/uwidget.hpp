@@ -1,4 +1,4 @@
-// uwidget.hpp -- generated 09/26/26 21:10:58
+// uwidget.hpp -- generated 10/10/26 11:55:31
 #pragma once
 
 #include <array>
@@ -399,7 +399,7 @@ namespace uwidget {
     /**
      * @brief lvalue Value construction. Copy constructs value and records this in the session.
      */
-    explicit Widget(const value_t& x) : value{x} {
+    explicit Widget(const value_t& x) : value{(throw_if_needed<Op::ValueConstruction>(), x)} {
       get_metric_mut<Op::ValueConstruction>()++;
       get_metric_mut<Op::ActiveInstance>()++;
     }
@@ -407,7 +407,9 @@ namespace uwidget {
     /**
      * @brief rvalue Value construction. Move constructs value and records this in the session.
      */
-    explicit Widget(value_t&& x) : value{std::move(x)} {
+    explicit Widget(value_t&& x) :
+      value{(throw_if_needed<Op::ValueConstruction>(), std::move(x))} {
+
       get_metric_mut<Op::ValueConstruction>()++;
       get_metric_mut<Op::ActiveInstance>()++;
     }
@@ -447,7 +449,7 @@ namespace uwidget {
      */
     Widget& operator=(Widget&& other)
       noexcept(traits::template can_nothrow_op_v<Op::MoveAssignment>)
-      requires(traits::template can_op_v<Op::MoveConstruction>) {
+      requires(traits::template can_op_v<Op::MoveAssignment>) {
       throw_if_needed<Op::MoveAssignment>();
       get_metric_mut<Op::MoveAssignment>()++;
       value = std::move(other.value);
@@ -464,7 +466,9 @@ namespace uwidget {
      * @brief Copy constructor. Copy constructs value and records this in the session.
      * ThrowOnCopy widgets will throw before constructor is entered, without session tracking.
      */
-    Widget(const Widget& other) requires(traits::template can_op_v<Op::CopyConstruction>) :
+    Widget(const Widget& other)
+      noexcept(traits::template can_nothrow_op_v<Op::CopyConstruction>)
+      requires(traits::template can_op_v<Op::CopyConstruction>) :
       value{(throw_if_needed<Op::CopyConstruction>(), other.value)}
     {
       get_metric_mut<Op::CopyConstruction>()++;
@@ -475,7 +479,9 @@ namespace uwidget {
      * @brief Copy assignment operator. Copy assigns value and records this in the session.
      * ThrowOnCopy widgets will throw before value is assigned, without session tracking.
      */
-    Widget& operator=(const Widget& other) requires(traits::template can_op_v<Op::CopyAssignment>) {
+    Widget& operator=(const Widget& other)
+      noexcept(traits::template can_nothrow_op_v<Op::CopyAssignment>)
+      requires(traits::template can_op_v<Op::CopyAssignment>) {
       throw_if_needed<Op::CopyAssignment>();
       get_metric_mut<Op::CopyAssignment>()++;
       value = other.value;
