@@ -25,7 +25,7 @@ TEST_CASE("assignability and constructibility") {
   }
 
   SUBCASE("ThrowOn copy construct") {
-    using W = Widget<ThrowOnNthOperation<Op::CopyConstruction, 1>>;
+    using W = Widget<ThrowOnNth<Op::CopyConstruction, 1>>;
     CHECK(   std::is_copy_assignable_v<W>);
     CHECK(   std::is_copy_constructible_v<W>);
     CHECK(   std::is_nothrow_copy_assignable_v<W>);
@@ -33,7 +33,7 @@ TEST_CASE("assignability and constructibility") {
   }
 
   SUBCASE("ThrowOn copy assign") {
-    using W = Widget<ThrowOnNthOperation<Op::CopyAssignment, 1>>;
+    using W = Widget<ThrowOnNth<Op::CopyAssignment, 1>>;
     CHECK(   std::is_copy_assignable_v<W>);
     CHECK(   std::is_copy_constructible_v<W>);
     CHECK( ! std::is_nothrow_copy_assignable_v<W>);
@@ -41,7 +41,7 @@ TEST_CASE("assignability and constructibility") {
   }
 
   SUBCASE("ThrowOn move construct") {
-  using W = Widget<ThrowOnNthOperation<Op::MoveConstruction, 1>>;
+  using W = Widget<ThrowOnNth<Op::MoveConstruction, 1>>;
     CHECK(   std::is_move_assignable_v<W>);
     CHECK(   std::is_move_constructible_v<W>);
     CHECK(   std::is_nothrow_move_assignable_v<W>);
@@ -49,7 +49,7 @@ TEST_CASE("assignability and constructibility") {
   }
 
   SUBCASE("ThrowOn move assign") {
-    using W = Widget<ThrowOnNthOperation<Op::MoveAssignment, 1>>;
+    using W = Widget<ThrowOnNth<Op::MoveAssignment, 1>>;
     CHECK(   std::is_move_assignable_v<W>);
     CHECK(   std::is_move_constructible_v<W>);
     CHECK( ! std::is_nothrow_move_assignable_v<W>);
@@ -57,13 +57,13 @@ TEST_CASE("assignability and constructibility") {
   }
 
   SUBCASE("ThrowOn default construct") {
-    using W = Widget<ThrowOnNthOperation<Op::DefaultConstruction, 1>>;
+    using W = Widget<ThrowOnNth<Op::DefaultConstruction, 1>>;
     CHECK(   std::is_default_constructible_v<W>);
     CHECK( ! std::is_nothrow_default_constructible_v<W>);
   }
 
   SUBCASE("ThrowOn value construct") {
-    using W = Widget<ThrowOnNthOperation<Op::ValueConstruction, 1>, Value<int>>;
+    using W = Widget<ThrowOnNth<Op::ValueConstruction, 1>, Value<int>>;
     CHECK(   std::is_constructible_v<W, int>);
     CHECK( ! std::is_nothrow_constructible_v<W, int>);
   }

@@ -150,7 +150,7 @@ namespace uwidget::detail {
   };
 
   template <Op OpV, size_t N, typename ...Other>
-  struct get_throwat_n<OpV, policy::ThrowOnNthOperation<OpV, N>, Other...> {
+  struct get_throwat_n<OpV, policy::ThrowOnNth<OpV, N>, Other...> {
     static constexpr size_t n = N;
   };
 
@@ -185,7 +185,6 @@ namespace uwidget::detail {
     inline static constexpr bool can_nothrow_op_v =
          !has_policy_v<policy::ForceNonNoexcept<op>>
       && !has_policy_v<policy::Disable<op>>
-      && !has_policy_v<policy::ThrowOn<op>>
       && has_ability_v<op, value_t> 
       && has_nothrow_ability_v<op, value_t>
       && get_throwat_n_v<op, ExpandedPolicies...> == 0;

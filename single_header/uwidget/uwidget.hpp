@@ -1,4 +1,4 @@
-// uwidget.hpp -- generated 10/10/26 11:55:31
+// uwidget.hpp -- generated 10/10/26 12:12:56
 #pragma once
 
 #include <array>
@@ -103,16 +103,10 @@ namespace uwidget::policy {
   struct NoCopy : policy_base{};
 
   /**
-   * @brief Causes the operation specified by OpV to throw
+   * @brief Causes the Nth instantiation of the specified operation to throw. Defaults to N = 1
    */
-  template <Op OpV>
-  struct ThrowOn : policy_base{};
-
-  /**
-   * @brief Causes the Nth instantiation of the specified operation to throw
-   */
-  template <Op op, size_t N>
-  struct ThrowOnNthOperation : policy_base{};
+  template <Op op, size_t N = 1>
+  struct ThrowOnNth : policy_base{};
 
 
   /**
@@ -288,7 +282,7 @@ namespace uwidget::detail {
   };
 
   template <Op OpV, size_t N, typename ...Other>
-  struct get_throwat_n<OpV, policy::ThrowOnNthOperation<OpV, N>, Other...> {
+  struct get_throwat_n<OpV, policy::ThrowOnNth<OpV, N>, Other...> {
     static constexpr size_t n = N;
   };
 
@@ -323,7 +317,6 @@ namespace uwidget::detail {
     inline static constexpr bool can_nothrow_op_v =
          !has_policy_v<policy::ForceNonNoexcept<op>>
       && !has_policy_v<policy::Disable<op>>
-      && !has_policy_v<policy::ThrowOn<op>>
       && has_ability_v<op, value_t> 
       && has_nothrow_ability_v<op, value_t>
       && get_throwat_n_v<op, ExpandedPolicies...> == 0;
@@ -499,14 +492,9 @@ namespace uwidget {
     template <Op op>
     inline static void throw_if_needed() {
       using namespace policy;
-      if constexpr (w_has_policy_v<policy::ThrowOn<op>>) {
-        throw WidgetException(std::format("uwidget: ThrowOn {}", op_message_v<op>).c_str());
-      }
-      else {
-        constexpr size_t limit = detail::get_throwat_n_v<op, Policies...>;
-        if constexpr (limit > 0) {
-          if (get_metric<op>() == limit - 1) throw WidgetException(std::format("uwidget: {} {}s reached", limit, op_message_v<op>).c_str());
-        }
+      constexpr size_t limit = detail::get_throwat_n_v<op, Policies...>;
+      if constexpr (limit > 0) {
+        if (get_metric<op>() == limit - 1) throw WidgetException(std::format("uwidget: {} {}s reached", limit, op_message_v<op>).c_str());
       }
     }
 

@@ -35,16 +35,10 @@ namespace uwidget::policy {
   struct NoCopy : policy_base{};
 
   /**
-   * @brief Causes the operation specified by OpV to throw
+   * @brief Causes the Nth instantiation of the specified operation to throw. Defaults to N = 1
    */
-  template <Op OpV>
-  struct ThrowOn : policy_base{};
-
-  /**
-   * @brief Causes the Nth instantiation of the specified operation to throw
-   */
-  template <Op op, size_t N>
-  struct ThrowOnNthOperation : policy_base{};
+  template <Op op, size_t N = 1>
+  struct ThrowOnNth : policy_base{};
 
 
   /**

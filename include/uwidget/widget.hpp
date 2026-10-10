@@ -167,14 +167,9 @@ namespace uwidget {
     template <Op op>
     inline static void throw_if_needed() {
       using namespace policy;
-      if constexpr (w_has_policy_v<policy::ThrowOn<op>>) {
-        throw WidgetException(std::format("uwidget: ThrowOn {}", op_message_v<op>).c_str());
-      }
-      else {
-        constexpr size_t limit = detail::get_throwat_n_v<op, Policies...>;
-        if constexpr (limit > 0) {
-          if (get_metric<op>() == limit - 1) throw WidgetException(std::format("uwidget: {} {}s reached", limit, op_message_v<op>).c_str());
-        }
+      constexpr size_t limit = detail::get_throwat_n_v<op, Policies...>;
+      if constexpr (limit > 0) {
+        if (get_metric<op>() == limit - 1) throw WidgetException(std::format("uwidget: {} {}s reached", limit, op_message_v<op>).c_str());
       }
     }
 
