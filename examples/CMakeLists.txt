@@ -1,0 +1,16 @@
+set(example_sources "")
+macro(uw_add_example UW_EXAMPLE_NAME)
+  add_executable(${UW_EXAMPLE_NAME} ${UW_EXAMPLE_NAME}.cpp)
+  target_link_libraries(${UW_EXAMPLE_NAME} ${UW_LIB})
+  target_include_directories(${UW_EXAMPLE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/third_party)
+  target_compile_definitions(${UW_EXAMPLE_NAME} PRIVATE DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN)
+  list(APPEND example_sources ${UW_EXAMPLE_NAME}.cpp)
+endmacro()
+
+uw_add_example(small_vector)
+add_executable(uw_examples_all)
+target_sources(uw_examples_all PRIVATE ${example_sources})
+target_compile_definitions(uw_examples_all PRIVATE DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN)
+target_include_directories(uw_examples_all PRIVATE ${CMAKE_SOURCE_DIR}/third_party)
+target_link_libraries(uw_examples_all ${UW_LIB})
+

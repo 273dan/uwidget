@@ -38,6 +38,7 @@ install(EXPORT ${UW_LIB_TARGETS}
 if(${PROJECT_IS_TOP_LEVEL})
   enable_testing()
   add_subdirectory(tests)
+  add_subdirectory(examples)
 endif()
 
 
