@@ -1,4 +1,4 @@
-// uwidget.hpp -- generated 10/10/26 12:12:56
+// uwidget.hpp -- generated 10/15/26 18:27:08
 #pragma once
 
 #include <array>
@@ -103,16 +103,16 @@ namespace uwidget::policy {
   struct NoCopy : policy_base{};
 
   /**
-   * @brief Causes the Nth instantiation of the specified operation to throw. Defaults to N = 1
+   * @brief Causes the Nth execution of the specified operation to throw. Defaults to N = 1
    */
-  template <Op op, size_t N = 1>
+  template <Op OpV, size_t N = 1>
   struct ThrowOnNth : policy_base{};
 
 
   /**
    * @brief Forces the specified operation to be non-noexcept
    */
-  template <Op op>
+  template <Op OpV>
   struct ForceNonNoexcept : policy_base{};
 
   /**
