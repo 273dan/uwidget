@@ -1,4 +1,5 @@
 # uwidget
+[![CI](https://github.com/273dan/uwidget/actions/workflows/ci.yml/badge.svg)](https://github.com/273dan/uwidget/actions/workflows/ci.yml)
 
 **uwidget** is a C++23 header only library designed to test custom containers.
 
