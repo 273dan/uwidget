@@ -15,7 +15,7 @@ build:	config
 .PHONY: test
 test:	build
 	./build/tests/uw_tests $(UW_DOCTESTFLAGS)
-	./build/examples/uw_exampels_all $(UW_DOCTESTFLAGS)
+	./build/examples/uw_examples_all $(UW_DOCTESTFLAGS)
 
 .PHONY: clean
 clean:

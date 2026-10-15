@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+jobs:
+  test:
+    name: Test (${{ matrix.compiler.name }})
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        compiler:
+          - name: GCC
+            cxx: g++
+            cc: gcc
+          - name: Clang
+            cxx: clang++
+            cc: clang
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v6
+
+        - name: Check amalgamated header is up to date
+          run: |
+            make header
+            git diff --exit-code single_header/
+
+        - name: Build and run tests
+          env:
+            CXX: ${{ matrix.compiler.cxx }}
+            CC: ${{ matrix.compiler.cc }}
+          run: |
+            make test-all
+
