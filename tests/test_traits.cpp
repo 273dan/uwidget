@@ -98,8 +98,8 @@ TEST_CASE("assignability and constructibility") {
   SUBCASE("where value type is non nothrow moveable") {
 
     struct NonMovingValue {
-      NonMovingValue(NonMovingValue&&) noexcept(false) = default;
-      NonMovingValue& operator=(NonMovingValue&&) noexcept(false) = default;
+      NonMovingValue(NonMovingValue&&) noexcept(false) {};
+      NonMovingValue& operator=(NonMovingValue&&) noexcept(false) { return *this; };
     };
 
     using W = Widget<Value<NonMovingValue>>;
