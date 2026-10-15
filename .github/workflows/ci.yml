@@ -16,19 +16,19 @@ jobs:
           - name: Clang
             cxx: clang++
             cc: clang
-      steps:
-        - name: Checkout
-          uses: actions/checkout@v6
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
 
-        - name: Check amalgamated header is up to date
-          run: |
-            make header
-            git diff --exit-code single_header/
+      - name: Check amalgamated header is up to date
+        run: |
+          make header
+          git diff --exit-code single_header/
 
-        - name: Build and run tests
-          env:
-            CXX: ${{ matrix.compiler.cxx }}
-            CC: ${{ matrix.compiler.cc }}
-          run: |
-            make test-all
+      - name: Build and run tests
+        env:
+          CXX: ${{ matrix.compiler.cxx }}
+          CC: ${{ matrix.compiler.cc }}
+        run: |
+          make test-all
 
